@@ -27,3 +27,22 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
 }
+
+project.afterEvaluate {
+    android.applicationVariants.all { variant ->
+
+        def variantOutput = variant.outputs.first()
+        def variantName = variant.name.capitalize()
+        def variantData = variant.variantData
+        def resDir
+
+        if (variantOutput.processResources.properties['resDir'] != null) {
+            resDir = variantOutput.processResources.resDir
+        } else if (variantOutput.processResources.properties['inputResourcesDir'] != null) {
+            resDir = variantOutput.processResources.inputResourcesDir.getFiles().first()
+        }
+
+        println "resDir="+resDir
+
+    }
+}
