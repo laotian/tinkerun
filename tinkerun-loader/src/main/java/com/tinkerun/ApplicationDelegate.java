@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import com.tencent.tinker.lib.tinker.Tinker;
 import com.tencent.tinker.lib.tinker.TinkerInstaller;
 import com.tencent.tinker.loader.app.DefaultApplicationLike;
+import com.tencent.tinker.loader.shareutil.ShareConstants;
 
 /**
  * Created by tianlupan on 2017/11/14.
@@ -51,7 +52,7 @@ public class ApplicationDelegate extends DefaultApplicationLike {
 
     private void installTinker(){
         //TODO  清除Tinker，安装自己的
-        Tinker tinker = new Tinker.Builder(getApplication()).build();
+        Tinker tinker = new Tinker.Builder(getApplication()).tinkerFlags(ShareConstants.TINKER_DEX_AND_LIBRARY).build();
         Tinker.create(tinker);
         tinker.install(getTinkerResultIntent(),TinkerunResultService.class,new TinkerunUpgradePatch());
     }
