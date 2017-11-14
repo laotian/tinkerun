@@ -1,0 +1,42 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "26.0.2"
+
+
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 22
+        versionCode 1
+        versionName "1.0"
+        /**
+         * you can use multiDex and install it in your ApplicationLifeCycle implement
+         */
+        multiDexEnabled true
+    }
+
+    buildTypes {
+        debug{
+            debuggable true
+            minifyEnabled false
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    testCompile 'junit:junit:4.12'
+    compile "com.android.support:multidex:1.0.1"
+    compile("com.tencent.tinker:tinker-android-lib:${TINKER_VERSION}") { changing = true }
+    compile("com.tencent.tinker:tinker-android-loader:${TINKER_VERSION}") { changing = true }
+    compile("com.tencent.tinker:aosp-dexutils:${TINKER_VERSION}") { changing = true }
+    compile("com.tencent.tinker:bsdiff-util:${TINKER_VERSION}") { changing = true }
+    compile("com.tencent.tinker:tinker-ziputils:${TINKER_VERSION}") { changing = true }
+    compile("com.tencent.tinker:tinker-commons:${TINKER_VERSION}") { changing = true }
+}

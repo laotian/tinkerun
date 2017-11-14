@@ -1,4 +1,4 @@
-package com.example.laotian.myapplication;
+package io.laotian.tinkerun.com.tencent.tinker.loader;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -14,6 +14,8 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import io.laotian.tinkerun.com.tencent.tinker.loader.shareutil.ShareReflectUtil;
 
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.KITKAT;
@@ -157,6 +159,8 @@ class TinkerResourcePatcher {
             return;
         }
 
+        String originalApk=context.getApplicationInfo().sourceDir;
+
         for (Field field : new Field[]{packagesFiled, resourcePackagesFiled}) {
             Object value = field.get(currentActivityThread);
 
@@ -171,10 +175,21 @@ class TinkerResourcePatcher {
                 }
             }
         }
+
+
+        // 先加老的，用做测试
+        if (((Integer) addAssetPathMethod.invoke(newAssetManager, originalApk)) == 0) {
+            throw new IllegalStateException("Could not create new AssetManager, add original apk source failed");
+        }
+
+
         // Create a new AssetManager instance and point it to the resources installed under
         if (((Integer) addAssetPathMethod.invoke(newAssetManager, externalResourceFile)) == 0) {
             throw new IllegalStateException("Could not create new AssetManager");
         }
+
+
+
 
         // Kitkat needs this method call, Lollipop doesn't. However, it doesn't seem to cause any harm
         // in L, so we do it unconditionally.

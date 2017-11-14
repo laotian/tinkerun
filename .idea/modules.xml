@@ -4,6 +4,9 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/MyApplication5.iml" filepath="$PROJECT_DIR$/MyApplication5.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tinkerun.iml" filepath="$PROJECT_DIR$/tinkerun.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tinkerun-loader/tinkerun-loader.iml" filepath="$PROJECT_DIR$/tinkerun-loader/tinkerun-loader.iml" />
     </modules>
   </component>
 </project>

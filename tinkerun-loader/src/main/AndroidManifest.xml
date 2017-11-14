@@ -1,0 +1,17 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.tinkerun" >
+    <application>
+        <service android:name=".TinkerunService" android:enabled="true" android:exported="true">
+            <intent-filter>
+                <action android:name="com.tinkerun.TinkerunService"></action>
+            </intent-filter>
+        </service>
+        <service android:name=".TinkerunResultService"
+            android:exported="false"
+            android:enabled="true"></service>
+
+
+    </application>
+
+
+</manifest>

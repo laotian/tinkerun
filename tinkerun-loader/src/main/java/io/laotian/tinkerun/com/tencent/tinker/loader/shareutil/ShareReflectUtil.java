@@ -1,4 +1,4 @@
-package com.example.laotian.myapplication;
+package io.laotian.tinkerun.com.tencent.tinker.loader.shareutil;
 
 import android.content.Context;
 
