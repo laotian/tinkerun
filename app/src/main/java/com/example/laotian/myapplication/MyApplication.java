@@ -1,8 +1,8 @@
 package com.example.laotian.myapplication;
 
 import android.app.Application;
+import android.support.multidex.MultiDex;
 import android.util.Log;
-import io.laotian.tinkerun.com.tencent.tinker.loader.TinkerLoader;
 
 public class MyApplication extends Application {
 
@@ -10,7 +10,7 @@ public class MyApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        TinkerLoader.loadResource(this);
-        Log.d("MyApplication","onCreate..");
+        MultiDex.install(this);
+        Log.d("MyApplication","onCreate2..");
     }
 }

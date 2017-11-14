@@ -1,4 +1,15 @@
 apply plugin: 'com.android.application'
+apply plugin: 'tinkerun'
+
+buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+    }
+    dependencies {
+        classpath "com.tencent.tinker:tinkerun-plugin:${TINKER_VERSION}"
+    }
+}
 
 android {
     compileSdkVersion 24
@@ -10,6 +21,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        buildConfigField "String", "PLATFORM", "\"all\""
     }
     buildTypes {
         release {
@@ -18,6 +30,9 @@ android {
         }
     }
 }
+//tinkerun{
+//    enabled false
+//}
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
