@@ -1,7 +1,9 @@
 package com.tinkerun.build;
 
 import com.tinkerun.build.extension.*
-import com.tinkerun.build.task.TinkerunManifestTask;
+import com.tinkerun.build.task.TinkerunManifestTask
+import com.tinkerun.build.task.TinkerunRTask
+import com.tinkerun.build.task.TinkerunResourceIdTask;
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -39,6 +41,11 @@ public class TinkerunPlugin implements Plugin<Project> {
                 def variantName = variant.name.capitalize()
                 def variantData = variant.variantData
 
+                //如果不能调试，比如Release模式，不启用Tinkerun
+                if(!variant.getBuildType().buildType.isDebuggable()){
+                    return
+                }
+
                 def instantRunTask = getInstantRunTask(project, variantName)
                 if (instantRunTask != null) {
                     throw new GradleException(
@@ -47,6 +54,9 @@ public class TinkerunPlugin implements Plugin<Project> {
                                     + " in 'File->Settings...'."
                     )
                 }
+
+                // Add this proguard settings file to the list
+
 
 //                variant.outputs.each { output ->
 //                    setPatchNewApkPath(configuration, output, variant, tinkerPatchBuildTask)
@@ -67,6 +77,38 @@ public class TinkerunPlugin implements Plugin<Project> {
 
                 variantOutput.processResources.dependsOn manifestTask
 
+//                boolean  isPatchTask=new File(TinkerunResourceIdTask.)
+
+                File file=project.file(TinkerunRTask.getRTxt(variantName))
+
+                //打基础包任务
+                if(!file.exists()){
+                    TinkerunRTask rTask = project.tasks.create("tinkerunCopy${variantName}RTxt", TinkerunRTask)
+                    rTask.variantName=variantName
+                    def packageTask=getPackageTask(project, variantName)
+                    def assembleTask=getAssembleTask(project, variantName)
+                    assembleTask.dependsOn rTask
+                    rTask.mustRunAfter packageTask
+                    return
+                }
+
+                //resource id
+                TinkerunResourceIdTask applyResourceTask = project.tasks.create("tinkerunProcess${variantName}ResourceId", TinkerunResourceIdTask)
+
+                applyResourceTask.rTxtFile=TinkerunRTask.getRTxt(variantName)
+                if (variantOutput.processResources.properties['resDir'] != null) {
+                    applyResourceTask.resDir = variantOutput.processResources.resDir
+                } else if (variantOutput.processResources.properties['inputResourcesDir'] != null) {
+                    applyResourceTask.resDir = variantOutput.processResources.inputResourcesDir.getFiles().first()
+                }
+                //let applyResourceTask run after manifestTask
+                applyResourceTask.mustRunAfter manifestTask
+
+                variantOutput.processResources.dependsOn applyResourceTask
+
+                if (manifestTask.manifestPath == null || applyResourceTask.resDir == null) {
+                    throw new RuntimeException("manifestTask.manifestPath or applyResourceTask.resDir is null.")
+                }
 
             }
 
@@ -82,6 +124,16 @@ public class TinkerunPlugin implements Plugin<Project> {
     Task getCollectMultiDexComponentsTask(Project project, String variantName) {
         String collectMultiDexComponents = "collect${variantName}MultiDexComponents"
         return project.tasks.findByName(collectMultiDexComponents)
+    }
+
+    Task getPackageTask(Project project,String variantName){
+        String packageTaskName = "package${variantName}"
+        return project.tasks.findByName(packageTaskName)
+    }
+
+    Task getAssembleTask(Project project,String variantName){
+        String assemble = "assemble${variantName}"
+        return project.tasks.findByName(assemble)
     }
 
 }

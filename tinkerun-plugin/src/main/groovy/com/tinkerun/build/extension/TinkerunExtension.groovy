@@ -13,6 +13,11 @@ public class TinkerunExtension {
     //开启Tinkerun
     boolean  enabled;
 
+    //原始的R.txt
+    String applyResourceMapping;
+
+    boolean  usingResourceMapping;
+
     public TinkerunExtension() {
         this.enabled=true;
     }
