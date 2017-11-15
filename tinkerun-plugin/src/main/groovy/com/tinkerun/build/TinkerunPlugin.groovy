@@ -3,6 +3,7 @@ package com.tinkerun.build;
 import com.tinkerun.build.extension.*
 import com.tinkerun.build.task.TinkerunCopyResourcesTask
 import com.tinkerun.build.task.TinkerunDexTask
+import com.tinkerun.build.task.TinkerunInstallTask
 import com.tinkerun.build.task.TinkerunManifestTask
 import com.tinkerun.build.task.TinkerunRTask
 import com.tinkerun.build.task.TinkerunResourceIdTask
@@ -90,13 +91,6 @@ public class TinkerunPlugin implements Plugin<Project> {
                 assembleTask.dependsOn rTask
                 rTask.mustRunAfter packageTask
 
-//                File file=project.file(TinkerunRTask.getRTxt(variantName))
-//                //打基础包任务
-//                if(!file.exists()){
-//
-//                    return
-//                }
-
                 //resource id
                 TinkerunResourceIdTask applyResourceTask = project.tasks.create("tinkerunProcess${variantName}ResourceId", TinkerunResourceIdTask)
 
@@ -127,9 +121,15 @@ public class TinkerunPlugin implements Plugin<Project> {
                 TinkerunDexTask dexTask = project.tasks.create("tinkerun${variantName}Dex", TinkerunDexTask)
                 dexTask.dependsOn  copyResourceTask
 
+                def apkFile=project.file(TINKER_INTERMEDIATES+variantName+"/"+RESOURCES_FILE_NAME)
+
+                TinkerunInstallTask installTask = project.tasks.create("tinkerunInstall${variantName}", TinkerunInstallTask)
+                installTask.resourceApk=apkFile
+                installTask.packageName=variant.applicationId
+                installTask.dependsOn  dexTask
+
                 TinkerunPatchTask patchTask = project.tasks.create("tinkerunPatch${variantName}", TinkerunPatchTask)
-                patchTask.dependsOn  dexTask
-project.logger.println("taskNames="+project.gradle.startParameter.taskNames)
+                patchTask.dependsOn  installTask
 
                 def applyResourceTaskEnable=false
                 if(configuration.patchResource) {

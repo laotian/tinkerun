@@ -45,6 +45,7 @@ dependencies {
 }
 
 project.afterEvaluate {
+
     android.applicationVariants.all { variant ->
 
         def variantOutput = variant.outputs.first()
