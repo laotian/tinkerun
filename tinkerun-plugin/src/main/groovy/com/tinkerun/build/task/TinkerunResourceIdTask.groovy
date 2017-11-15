@@ -23,6 +23,7 @@ import com.tencent.tinker.build.aapt.RDotTxtEntry
 import com.tencent.tinker.build.util.FileOperation
 import com.tinkerun.build.TinkerunPlugin
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.tasks.TaskAction
 
 /**
@@ -51,18 +52,23 @@ public class TinkerunResourceIdTask extends DefaultTask {
 
         String idsXml = resDir + "/values/ids.xml";
         String publicXml = resDir + "/values/public.xml";
-        FileOperation.deleteFile(idsXml);
-        FileOperation.deleteFile(publicXml);
-
 
         if(cleanMode){
+            FileOperation.deleteFile(idsXml);
+            FileOperation.deleteFile(publicXml);
+            return
+        }
+
+        //不重复生成
+        if(FileOperation.fileExists(publicXml) && FileOperation.fileExists(idsXml)){
             return
         }
 
         def resourceMappingFile=project.file(rTxtFile).getAbsolutePath()
         // Parse the public.xml and ids.xml
         if (!FileOperation.isLegalFile(resourceMappingFile)) {
-            project.logger.error("apply resource mapping file ${resourceMappingFile} is illegal, just ignore")
+            throw new GradleException("apply resource mapping file ${resourceMappingFile} is illegal, just ignore, path resource failed!")
+//            project.logger.error()
             return
         }
 
@@ -70,7 +76,7 @@ public class TinkerunResourceIdTask extends DefaultTask {
         List<String> resourceDirectoryList = new ArrayList<String>()
         resourceDirectoryList.add(resDir)
 
-        project.logger.error("we build ${project.getName()} apk with apply resource mapping file ${resourceMappingFile}")
+        project.logger.info("we build ${project.getName()} apk with apply resource mapping file ${resourceMappingFile}")
 //        project.extensions.tinkerun.usingResourceMapping = true
         Map<RDotTxtEntry.RType, Set<RDotTxtEntry>> rTypeResourceMap = PatchUtil.readRTxt(resourceMappingFile)
 

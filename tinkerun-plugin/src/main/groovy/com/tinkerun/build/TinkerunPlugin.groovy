@@ -1,6 +1,7 @@
 package com.tinkerun.build;
 
 import com.tinkerun.build.extension.*
+import com.tinkerun.build.task.TinkerunCopyResourcesTask
 import com.tinkerun.build.task.TinkerunDexTask
 import com.tinkerun.build.task.TinkerunManifestTask
 import com.tinkerun.build.task.TinkerunRTask
@@ -19,6 +20,8 @@ import org.gradle.api.Task
 public class TinkerunPlugin implements Plugin<Project> {
 
     public static final String TINKER_INTERMEDIATES = "build/intermediates/tinkerun_intermediates/"
+
+    public static final String RESOURCES_FILE_NAME="resources.apk"
 
     @Override
     public void apply(Project project) {
@@ -79,10 +82,6 @@ public class TinkerunPlugin implements Plugin<Project> {
 
                 variantOutput.processResources.dependsOn manifestTask
 
-//                boolean  isPatchTask=new File(TinkerunResourceIdTask.)
-
-
-
                 //保存基顾包的R.txt
                 TinkerunRTask rTask = project.tasks.create("tinkerunCopy${variantName}RTxt", TinkerunRTask)
                 rTask.variantName=variantName
@@ -116,9 +115,17 @@ public class TinkerunPlugin implements Plugin<Project> {
                     throw new RuntimeException("manifestTask.manifestPath or applyResourceTask.resDir is null.")
                 }
 
+                def resourcesFile=variantOutput.processResources.packageOutputFile
+
+                //copy Resource
+                TinkerunCopyResourcesTask copyResourceTask = project.tasks.create("tinkerunCopy${variantName}Resource", TinkerunCopyResourcesTask)
+                copyResourceTask.variantName=variantName
+                copyResourceTask.resourcesFile=resourcesFile
+                copyResourceTask.dependsOn variantOutput.processResources
+
 
                 TinkerunDexTask dexTask = project.tasks.create("tinkerun${variantName}Dex", TinkerunDexTask)
-                dexTask.dependsOn  variantOutput.processResources
+                dexTask.dependsOn  copyResourceTask
 
                 TinkerunPatchTask patchTask = project.tasks.create("tinkerunPatch${variantName}", TinkerunPatchTask)
                 patchTask.dependsOn  dexTask
