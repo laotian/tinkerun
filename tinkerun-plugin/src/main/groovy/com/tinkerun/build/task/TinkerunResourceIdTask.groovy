@@ -37,6 +37,9 @@ public class TinkerunResourceIdTask extends DefaultTask {
     String resDir
     String rTxtFile
 
+    //如果是cleanMode清除，否则生成id.xml和public.xml
+    boolean  cleanMode=false
+
 
     TinkerunResourceIdTask() {
         group = 'tinkerun'
@@ -45,16 +48,25 @@ public class TinkerunResourceIdTask extends DefaultTask {
     @TaskAction
     def applyResourceId() {
 //        String resourceMappingFile = project.extensions.tinkerun.applyResourceMapping
+
+        String idsXml = resDir + "/values/ids.xml";
+        String publicXml = resDir + "/values/public.xml";
+        FileOperation.deleteFile(idsXml);
+        FileOperation.deleteFile(publicXml);
+
+
+        if(cleanMode){
+            return
+        }
+
         def resourceMappingFile=project.file(rTxtFile).getAbsolutePath()
         // Parse the public.xml and ids.xml
         if (!FileOperation.isLegalFile(resourceMappingFile)) {
             project.logger.error("apply resource mapping file ${resourceMappingFile} is illegal, just ignore")
             return
         }
-        String idsXml = resDir + "/values/ids.xml";
-        String publicXml = resDir + "/values/public.xml";
-        FileOperation.deleteFile(idsXml);
-        FileOperation.deleteFile(publicXml);
+
+
         List<String> resourceDirectoryList = new ArrayList<String>()
         resourceDirectoryList.add(resDir)
 

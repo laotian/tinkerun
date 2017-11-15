@@ -124,15 +124,16 @@ public class TinkerunPlugin implements Plugin<Project> {
                 patchTask.dependsOn  dexTask
 project.logger.println("taskNames="+project.gradle.startParameter.taskNames)
 
-                applyResourceTask.setEnabled(false)
+                def applyResourceTaskEnable=false
                 if(configuration.patchResource) {
                     //违背了任务依赖解耦，FIXME
                     project.gradle.startParameter.taskNames.each { task ->
                         if (task.startsWith("tinkerun")) {
-                            applyResourceTask.setEnabled(true)
+                            applyResourceTaskEnable=true
                         }
                     }
                 }
+                applyResourceTask.cleanMode=!applyResourceTaskEnable
 
             }
 
