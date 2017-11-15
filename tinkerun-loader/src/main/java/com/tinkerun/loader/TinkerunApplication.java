@@ -1,4 +1,4 @@
-package com.tinkerun;
+package com.tinkerun.loader;
 
 import com.tencent.tinker.loader.TinkerLoader;
 import com.tencent.tinker.loader.app.TinkerApplication;
@@ -15,7 +15,7 @@ public class TinkerunApplication extends TinkerApplication {
 
     public TinkerunApplication(){
         //加载所有产，但资源必须在补丁安装成功后复制出来 TODO
-        super(ShareConstants.TINKER_ENABLE_ALL, "com.tinkerun.ApplicationDelegate", TinkerLoader.class.getName(), false);
+        super(ShareConstants.TINKER_ENABLE_ALL, ApplicationDelegate.class.getName(), TinkerLoader.class.getName(), false);
     }
 
 

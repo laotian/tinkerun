@@ -31,7 +31,7 @@ import org.gradle.api.tasks.TaskAction
 public class TinkerunManifestTask extends DefaultTask {
     static final String MANIFEST_XML = TinkerunPlugin.TINKER_INTERMEDIATES + "AndroidManifest.xml"
     static final String TINKER_ID = "TINKERUN_APP"
-    static final String TINKERUN_APPLICATION="com.tinkerun.TinkerunApplication"
+    static final String TINKERUN_APPLICATION="com.tinkerun.loader.TinkerunApplication"
     String manifestPath
 
     TinkerunManifestTask() {

@@ -1,4 +1,4 @@
-package com.tinkerun;
+package com.tinkerun.patch;
 
 import android.content.Intent;
 

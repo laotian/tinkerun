@@ -1,15 +1,22 @@
-package com.tinkerun;
+package com.tinkerun.loader;
 
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.tencent.tinker.lib.tinker.Tinker;
-import com.tencent.tinker.lib.tinker.TinkerInstaller;
 import com.tencent.tinker.loader.app.DefaultApplicationLike;
 import com.tencent.tinker.loader.shareutil.ShareConstants;
+import com.tinkerun.io.ManifestParser;
+import com.tinkerun.patch.TinkerunResultService;
+import com.tinkerun.patch.TinkerunUpgradePatch;
+
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Created by tianlupan on 2017/11/14.
@@ -18,6 +25,7 @@ import com.tencent.tinker.loader.shareutil.ShareConstants;
 public class ApplicationDelegate extends DefaultApplicationLike {
 
     private final Application userApplication;
+    private static final String TINKERUN_APP="TINKERUN_APP";
     public ApplicationDelegate(Application application, int tinkerFlags, boolean tinkerLoadVerifyFlag, long applicationStartElapsedTime, long applicationStartMillisTime, Intent tinkerResultIntent) {
         super(application, tinkerFlags, tinkerLoadVerifyFlag, applicationStartElapsedTime, applicationStartMillisTime, tinkerResultIntent);
         userApplication=createApplication();
@@ -25,9 +33,11 @@ public class ApplicationDelegate extends DefaultApplicationLike {
 
     //Create User_defined Application
     private Application createApplication(){
-        //TODO 读取Manifest 中的Application设置
-        String appClass=null;
+        Map<String,String> manifestMetaData=new LinkedHashMap<>();
+        ManifestParser.parse(getApplication(),new ManifestParser.MetaStringVisitor(TINKERUN_APP,manifestMetaData,true,false));
+        String appClass=manifestMetaData.get(TINKERUN_APP);
         if(!TextUtils.isEmpty(appClass)){
+            Log.d("Tinkerun","found delegate application : "+appClass);
             try {
               return    (Application) Class.forName(appClass).newInstance();
             } catch (InstantiationException e) {
