@@ -1,9 +1,11 @@
 package com.tinkerun.build;
 
 import com.tinkerun.build.extension.*
+import com.tinkerun.build.task.TinkerunDexTask
 import com.tinkerun.build.task.TinkerunManifestTask
 import com.tinkerun.build.task.TinkerunRTask
-import com.tinkerun.build.task.TinkerunResourceIdTask;
+import com.tinkerun.build.task.TinkerunResourceIdTask
+import com.tinkerun.build.task.TinkerunPatchTask
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -79,18 +81,22 @@ public class TinkerunPlugin implements Plugin<Project> {
 
 //                boolean  isPatchTask=new File(TinkerunResourceIdTask.)
 
-                File file=project.file(TinkerunRTask.getRTxt(variantName))
 
-                //打基础包任务
-                if(!file.exists()){
-                    TinkerunRTask rTask = project.tasks.create("tinkerunCopy${variantName}RTxt", TinkerunRTask)
-                    rTask.variantName=variantName
-                    def packageTask=getPackageTask(project, variantName)
-                    def assembleTask=getAssembleTask(project, variantName)
-                    assembleTask.dependsOn rTask
-                    rTask.mustRunAfter packageTask
-                    return
-                }
+
+                //保存基顾包的R.txt
+                TinkerunRTask rTask = project.tasks.create("tinkerunCopy${variantName}RTxt", TinkerunRTask)
+                rTask.variantName=variantName
+                def packageTask=getPackageTask(project, variantName)
+                def assembleTask=getAssembleTask(project, variantName)
+                assembleTask.dependsOn rTask
+                rTask.mustRunAfter packageTask
+
+//                File file=project.file(TinkerunRTask.getRTxt(variantName))
+//                //打基础包任务
+//                if(!file.exists()){
+//
+//                    return
+//                }
 
                 //resource id
                 TinkerunResourceIdTask applyResourceTask = project.tasks.create("tinkerunProcess${variantName}ResourceId", TinkerunResourceIdTask)
@@ -108,6 +114,22 @@ public class TinkerunPlugin implements Plugin<Project> {
 
                 if (manifestTask.manifestPath == null || applyResourceTask.resDir == null) {
                     throw new RuntimeException("manifestTask.manifestPath or applyResourceTask.resDir is null.")
+                }
+
+
+                TinkerunDexTask dexTask = project.tasks.create("tinkerun${variantName}Dex", TinkerunDexTask)
+                dexTask.dependsOn  variantOutput.processResources
+
+                TinkerunPatchTask patchTask = project.tasks.create("tinkerunPatch${variantName}", TinkerunPatchTask)
+                patchTask.dependsOn  dexTask
+project.logger.println("taskNames="+project.gradle.startParameter.taskNames)
+
+                applyResourceTask.setEnabled(false)
+                //违背了任务依赖解耦，FIXME
+                project.gradle.startParameter.taskNames.each {task->
+                    if(task.startsWith("tinkerun")){
+                        applyResourceTask.setEnabled(true)
+                    }
                 }
 
             }
