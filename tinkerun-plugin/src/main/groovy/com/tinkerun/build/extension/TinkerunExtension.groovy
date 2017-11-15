@@ -13,6 +13,9 @@ public class TinkerunExtension {
     //开启Tinkerun
     boolean  enabled;
 
+    //开启资源
+    boolean patchResource=true
+
     //原始的R.txt
     String applyResourceMapping;
 

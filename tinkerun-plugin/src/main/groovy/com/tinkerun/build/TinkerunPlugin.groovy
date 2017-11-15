@@ -125,10 +125,12 @@ public class TinkerunPlugin implements Plugin<Project> {
 project.logger.println("taskNames="+project.gradle.startParameter.taskNames)
 
                 applyResourceTask.setEnabled(false)
-                //违背了任务依赖解耦，FIXME
-                project.gradle.startParameter.taskNames.each {task->
-                    if(task.startsWith("tinkerun")){
-                        applyResourceTask.setEnabled(true)
+                if(configuration.patchResource) {
+                    //违背了任务依赖解耦，FIXME
+                    project.gradle.startParameter.taskNames.each { task ->
+                        if (task.startsWith("tinkerun")) {
+                            applyResourceTask.setEnabled(true)
+                        }
                     }
                 }
 
