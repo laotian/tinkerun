@@ -17,6 +17,7 @@
 package com.tencent.tinker.build.patch;
 
 import com.tencent.tinker.build.builder.PatchBuilder;
+import com.tencent.tinker.build.builder.TinkerunPatchBuilder;
 import com.tencent.tinker.build.decoder.ApkDecoder;
 import com.tencent.tinker.build.decoder.TinkerunApkDecoder;
 import com.tencent.tinker.build.info.PatchInfo;
@@ -71,7 +72,7 @@ public class TinkerunRunner {
             info.gen();
 
             //build patch
-            PatchBuilder builder = new PatchBuilder(config);
+            TinkerunPatchBuilder builder = new TinkerunPatchBuilder(config);
             builder.buildPatch();
 
         } catch (Throwable e) {
