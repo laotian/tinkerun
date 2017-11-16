@@ -5,6 +5,7 @@ import com.tinkerun.build.task.TinkerunCopyResourcesTask
 import com.tinkerun.build.task.TinkerunDexTask
 import com.tinkerun.build.task.TinkerunInstallTask
 import com.tinkerun.build.task.TinkerunManifestTask
+import com.tinkerun.build.task.TinkerunPackageTask
 import com.tinkerun.build.task.TinkerunRTask
 import com.tinkerun.build.task.TinkerunResourceIdTask
 import com.tinkerun.build.task.TinkerunPatchTask
@@ -118,15 +119,26 @@ public class TinkerunPlugin implements Plugin<Project> {
                 copyResourceTask.dependsOn variantOutput.processResources
 
 
+                def applicationId=variant.applicationId
+
                 TinkerunDexTask dexTask = project.tasks.create("tinkerun${variantName}Dex", TinkerunDexTask)
                 dexTask.dependsOn  copyResourceTask
 
-                def apkFile=project.file(TINKER_INTERMEDIATES+variantName+"/"+RESOURCES_FILE_NAME)
+                def resourceApk=project.file(TINKER_INTERMEDIATES+variantName+"/"+RESOURCES_FILE_NAME)
+                def apk=project.file(TINKER_INTERMEDIATES+variantName+"/"+applicationId+".apk")
 
+                //打包，签名
+                TinkerunPackageTask tinkerunPackageTask = project.tasks.create("tinkerunPackage${variantName}", TinkerunPackageTask)
+                tinkerunPackageTask.resourceApk=resourceApk
+                tinkerunPackageTask.apk=apk
+                tinkerunPackageTask.packageName=applicationId
+                tinkerunPackageTask.dependsOn dexTask
+
+                //上传
                 TinkerunInstallTask installTask = project.tasks.create("tinkerunInstall${variantName}", TinkerunInstallTask)
-                installTask.resourceApk=apkFile
+                installTask.apk=apk
                 installTask.packageName=variant.applicationId
-                installTask.dependsOn  dexTask
+                installTask.dependsOn  tinkerunPackageTask
 
                 TinkerunPatchTask patchTask = project.tasks.create("tinkerunPatch${variantName}", TinkerunPatchTask)
                 patchTask.dependsOn  installTask

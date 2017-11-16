@@ -57,7 +57,6 @@ public class ApplicationDelegate extends DefaultApplicationLike {
             userApplication.onCreate();
         }
         installTinker();
-        //TODO 监听补丁
     }
 
     private void installTinker(){

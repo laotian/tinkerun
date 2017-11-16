@@ -12,7 +12,7 @@ public class TinkerunInstallTask extends DefaultTask {
 
 
     public static final String INSTALL_POSITION="/sdcard/tinkerun/"
-    File resourceApk
+    File apk
     def packageName
 
     TinkerunInstallTask() {
@@ -25,7 +25,7 @@ public class TinkerunInstallTask extends DefaultTask {
         String adb=project.android.getAdbExe()
         project.exec {
             executable adb
-            args "push" ,"${resourceApk.getAbsolutePath()}" ,"${INSTALL_POSITION}${packageName}/res/resources.apk"
+            args "push" ,"${apk.getAbsolutePath()}" ,"${INSTALL_POSITION}${packageName}/res/resources.apk"
         }
         //通知手机通
         project.exec {

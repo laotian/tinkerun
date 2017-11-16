@@ -24,7 +24,8 @@ import org.gradle.api.tasks.TaskAction
 
 /**
  *  把Manifest中的application替换成 com.tinkerun.TinkerunApplication
- * 并且通过添加<meta-data TINKERUN_APP="旧application name" /> 保存旧的applicationName,以便委拖
+ * 并且通过添加<meta-data TINKERUN_APP="旧application name" /> 保存旧的applicationName,以便委托
+ * TODO 添加TINKER_ID
  * @author zhangshaowen
  * @author tianlupan
  */
