@@ -14,7 +14,10 @@ public class MainActivity extends Activity {
     }
 
     public void show(View view){
+
+       int a=100;
         Toast.makeText(this,getResources().getText(R.string.zy),Toast.LENGTH_LONG).show();
+        System.out.println("yes");
     }
 
 }

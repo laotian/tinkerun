@@ -15,7 +15,7 @@ public class TinkerunApplication extends TinkerApplication {
 
     public TinkerunApplication(){
         //加载所有产，但资源必须在补丁安装成功后复制出来 TODO
-        super(ShareConstants.TINKER_ENABLE_ALL, ApplicationDelegate.class.getName(), TinkerunLoader.class.getName(), false);
+        super(ShareConstants.TINKER_ENABLE_ALL, ApplicationDelegate.class.getName(), TinkerLoader.class.getName(), false);
     }
 
 

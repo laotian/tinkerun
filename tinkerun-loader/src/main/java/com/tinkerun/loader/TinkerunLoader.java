@@ -73,7 +73,7 @@ public class TinkerunLoader extends TinkerLoader {
             }
         }
 
-        loadResource(app,"/sdcard/tinkerun/"+app.getPackageName(),resultIntent);
+//        loadResource(app,"/sdcard/tinkerun/"+app.getPackageName(),resultIntent);
 
         return resultIntent;
     }
