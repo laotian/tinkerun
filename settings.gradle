@@ -1,1 +1,1 @@
-include ':app', ':tinkerun-loader', ':tinkerun-plugin'
+include ':app', ':tinkerun-loader', ':tinkerun-plugin', ':tinkerun-build-lib', ':tinkerun-patch-lib'

@@ -21,6 +21,9 @@ public class TinkerunExtension {
 
     boolean  usingResourceMapping;
 
+    String newApk
+    String outputFolder
+
     public TinkerunExtension() {
         this.enabled=true;
     }
