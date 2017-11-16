@@ -1,5 +1,5 @@
 apply plugin: 'com.android.application'
-//apply plugin: 'tinkerun'
+apply plugin: 'tinkerun'
 
 buildscript {
     repositories {
@@ -7,7 +7,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-     //   classpath "com.tencent.tinker:tinkerun-plugin:${TINKER_VERSION}"
+        classpath "com.tencent.tinker:tinkerun-plugin:${TINKER_VERSION}"
     }
 }
 

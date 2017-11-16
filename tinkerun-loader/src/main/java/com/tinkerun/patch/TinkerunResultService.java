@@ -1,6 +1,7 @@
 package com.tinkerun.patch;
 
 import android.content.Intent;
+import android.util.Log;
 
 import com.tencent.tinker.lib.service.DefaultTinkerResultService;
 
@@ -11,6 +12,7 @@ import com.tencent.tinker.lib.service.DefaultTinkerResultService;
 public class TinkerunResultService extends DefaultTinkerResultService {
     @Override
     protected void onHandleIntent(Intent intent) {
+        Log.d("Tinkerun","收到result");
         super.onHandleIntent(intent);
     }
 }

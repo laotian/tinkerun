@@ -25,7 +25,12 @@ public class TinkerunInstallTask extends DefaultTask {
         String adb=project.android.getAdbExe()
         project.exec {
             executable adb
-            args "push" ,"${resourceApk.getAbsolutePath()}" ,"${INSTALL_POSITION}${packageName}.apk"
+            args "push" ,"${resourceApk.getAbsolutePath()}" ,"${INSTALL_POSITION}${packageName}/res/resources.apk"
+        }
+        //通知手机通
+        project.exec {
+            executable adb
+            args "shell","am","startservice" ,"-n","${packageName}/com.tinkerun.patch.TinkerunDaemonService"
         }
     }
 

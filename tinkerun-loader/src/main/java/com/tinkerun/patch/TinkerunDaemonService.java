@@ -13,20 +13,22 @@ import java.io.File;
  * Created by tianlupan on 2017/11/14.
  */
 
-public class TinkerunService extends IntentService {
+public class TinkerunDaemonService extends IntentService {
 
 
-    public TinkerunService(){
+    public TinkerunDaemonService(){
         super("Tinkerun-Daemon");
     }
 
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        String patchLocation= Environment.getExternalStorageDirectory()+"/"+getApplicationContext().getApplicationInfo().packageName+"-patch.apk";
+        //TODO 检查SD卡权限
+        String patchLocation= Environment.getExternalStorageDirectory()+"/tinkerun/"+getApplicationContext().getApplicationInfo().packageName+"/res/resources.apk";
         File patch=new File(patchLocation);
         if(patch.exists() && patch.canRead()){
-            TinkerInstaller.onReceiveUpgradePatch(getApplicationContext(),patchLocation);
+            Log.e("Tinkerun","found resource file="+patch.getAbsolutePath());
+//            TinkerInstaller.onReceiveUpgradePatch(getApplicationContext(),patchLocation);
         }else{
             Log.e("Tinkerun","can't install file="+patch.getAbsolutePath());
         }

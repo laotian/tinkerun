@@ -1,9 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.tinkerun" >
     <application>
-        <service android:name=".patch.TinkerunService" android:enabled="true" android:exported="true">
+        <service android:name=".patch.TinkerunDaemonService" android:enabled="true" android:exported="true">
             <intent-filter>
-                <action android:name="com.tinkerun.TinkerunService"></action>
+                <action android:name="com.tinkerun.patch.TinkerunDaemonService"></action>
             </intent-filter>
         </service>
         <service android:name=".patch.TinkerunResultService"
