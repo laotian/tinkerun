@@ -169,6 +169,7 @@ public class TinkerunPlugin implements Plugin<Project> {
                 dexTask.javaCompile= variant.getJavaCompiler()
                 dexTask.lastBuildTime=Long.valueOf(LAST_BUILD)
                 dexTask.applicationVariant=variant
+                dexTask.targetDir=getTargetDir(variantName)
 
                 def resourceApk=targetDir+"/"+RESOURCES_FILE_NAME
                 def patchApk=targetDir+"/"+PATCH_APK_NAME
