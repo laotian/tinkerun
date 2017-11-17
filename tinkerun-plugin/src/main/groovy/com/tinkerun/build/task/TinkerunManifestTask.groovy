@@ -25,15 +25,16 @@ import org.gradle.api.tasks.TaskAction
 /**
  *  把Manifest中的application替换成 com.tinkerun.TinkerunApplication
  * 并且通过添加<meta-data TINKERUN_APP="旧application name" /> 保存旧的applicationName,以便委托
- * TODO 添加TINKER_ID
  * @author zhangshaowen
  * @author tianlupan
  */
 public class TinkerunManifestTask extends DefaultTask {
     static final String MANIFEST_XML = TinkerunPlugin.TINKER_INTERMEDIATES + "AndroidManifest.xml"
-    static final String TINKER_ID = "TINKERUN_APP"
+    static final String TINKER_APP = "TINKERUN_APP"
+    static final String TINKER_ID = "TINKERUN_ID"
     static final String TINKERUN_APPLICATION="com.tinkerun.loader.TinkerunApplication"
     String manifestPath
+    String tinkerId
 
     TinkerunManifestTask() {
         group = 'tinkerun'
@@ -42,53 +43,33 @@ public class TinkerunManifestTask extends DefaultTask {
     @TaskAction
     def updateManifest() {
         project.logger.error("tinkerun want to update ${manifestPath}")
-            writeManifestMeta()
-//        String applicationName = readManifestApplicationName(manifestPath)
-//        if(applicationName==null){
-//            applicationName=""
-//        }
-//        project.logger.error("tinker add ${tinkerValue} to your AndroidManifest.xml ${manifestPath}")
-//
-//        writeManifestMeta(manifestPath, TINKER_ID, applicationName)
-//        addApplicationToLoaderPattern()
-//        File manifestFile = new File(manifestPath)
-//        if (manifestFile.exists()) {
-//            FileOperation.copyFileUsingStream(manifestFile, project.file(MANIFEST_XML))
-//            project.logger.error("tinker gen AndroidManifest.xml in ${MANIFEST_XML}")
-//        }
-
-    }
-
-    void writeManifestMeta() {
         def ns = new Namespace("http://schemas.android.com/apk/res/android", "android")
 
         def xml = new XmlParser().parse(new InputStreamReader(new FileInputStream(manifestPath), "utf-8"))
 
         def application = xml.application[0]
         if (application) {
-
             def applicationName = application.attributes()[ns.name]
             application.attributes()[ns.name]=TINKERUN_APPLICATION
-
-            def metaDataTags = application['meta-data']
-
-            // remove any old TINKER_ID elements
-            def tinkerId = metaDataTags.findAll {
-                it.attributes()[ns.name].equals(TINKER_ID)
-            }.each {
-                it.parent().remove(it)
-            }
-
-            if (applicationName != null) {
-            // Add the new TINKER_ID element
-            application.appendNode('meta-data', [(ns.name): TINKER_ID, (ns.value): applicationName])
+            updateMeta(application,ns,TINKER_ID,tinkerId)
+            updateMeta(application,ns,TINKER_APP,applicationName)
         }
+        // Write the manifest file
+        def printer = new XmlNodePrinter(new PrintWriter(manifestPath, "utf-8"))
+        printer.preserveWhitespace = true
+        printer.print(xml)
+    }
 
-
-            // Write the manifest file
-            def printer = new XmlNodePrinter(new PrintWriter(manifestPath, "utf-8"))
-            printer.preserveWhitespace = true
-            printer.print(xml)
+    void updateMeta(application,ns,metaName,metaValue){
+        def metaDataTags = application['meta-data']
+        // remove any old TINKER_ID elements
+        def tinkerId = metaDataTags.findAll {
+            it.attributes()[ns.name].equals(metaName)
+        }.each {
+            it.parent().remove(it)
+        }
+        if(metaValue!=null) {
+            application.appendNode('meta-data', [(ns.name): metaName, (ns.value): metaValue])
         }
     }
 

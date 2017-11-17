@@ -4,14 +4,11 @@ import com.tencent.tinker.build.util.FileOperation
 import com.tencent.tinker.build.util.TypedValue
 import com.tencent.tinker.build.util.Utils;
 import com.tinkerun.build.extension.*
-import com.tinkerun.build.task.TinkerunCopyResourcesTask
 import com.tinkerun.build.task.TinkerunDexTask
 import com.tinkerun.build.task.TinkerunInstallTask
 import com.tinkerun.build.task.TinkerunManifestTask
 import com.tinkerun.build.task.TinkerunPatchSchemaTask
-import com.tinkerun.build.task.TinkerunRTask
 import com.tinkerun.build.task.TinkerunResourceIdTask
-import com.tinkerun.build.task.TinkerunPatchTask
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -27,7 +24,21 @@ public class TinkerunPlugin implements Plugin<Project> {
     public static final String TINKER_INTERMEDIATES = "build/intermediates/tinkerun_intermediates/"
 
     public static final String RESOURCES_FILE_NAME="resources.apk"
-    public static final String PATH_DEFAULT_OUTPUT="tinkerunPatch";
+    public static final String PATH_DEFAULT_OUTPUT="tinkerunPatch"
+    public static final String BASE_APK_NAME="base.apk"
+    public static final String PATCH_APK_NAME="patch.apk"
+    public static final String BASE_PROPERTIES="base.properties"
+    public static final String R_TXT="R.txt"
+    public static final String BASE_PROPERTIES_TINKER_ID="tinker_id";
+    public static final String BASE_PROPERTIES_LAST_BUILD="last_build";
+
+    static String getTargetDir(String variantName){
+        return TINKER_INTERMEDIATES+variantName+"/"
+    }
+
+    static String getRTxt(String variantName){
+        return getTargetDir(variantName)+R_TXT
+    }
 
     @Override
     public void apply(Project project) {
@@ -66,15 +77,27 @@ public class TinkerunPlugin implements Plugin<Project> {
                     )
                 }
 
+                //基础包模式或补丁模式
+                def patchMode=false
+                //违背了任务依赖解耦，FIXME
+                project.gradle.startParameter.taskNames.each { task ->
+                    if (task.startsWith("tinkerun")) {
+                        patchMode=true
+                    }
+                }
+
+                project.logger.error("patchMode="+patchMode)
+
+                def targetDir=project.file(getTargetDir(variantName)).getAbsolutePath()
+                def basePropertyFile=project.file(getTargetDir(variantName)+BASE_PROPERTIES)
                 // Add this proguard settings file to the list
-
-                TinkerunPatchSchemaTask tinkerunPatchBuildTask = project.tasks.create("tinkerunPatch${variantName}", TinkerunPatchSchemaTask)
-
-                tinkerunPatchBuildTask.signConfig = variantData.variantConfiguration.signingConfig
-
-                variant.outputs.each { output ->
-                    setPatchNewApkPath(configuration, output, variant, tinkerunPatchBuildTask)
-                    setPatchOutputFolder(configuration, output, variant, tinkerunPatchBuildTask)
+                def TINKER_ID="TINKERUN_"+date()
+                def LAST_BUILD
+                if(patchMode && basePropertyFile.exists()){
+                    Properties properties = new Properties()
+                    properties.load(basePropertyFile.newReader())
+                    TINKER_ID=properties.getProperty(BASE_PROPERTIES_TINKER_ID)
+                    LAST_BUILD=properties.getProperty(BASE_PROPERTIES_LAST_BUILD)
                 }
 
                 // Create a task to add a build TINKER_ID to AndroidManifest.xml
@@ -87,22 +110,42 @@ public class TinkerunPlugin implements Plugin<Project> {
                 } else if (variantOutput.processResources.properties['manifestFile'] != null) {
                     manifestTask.manifestPath = variantOutput.processResources.manifestFile
                 }
+                manifestTask.tinkerId=TINKER_ID
                 manifestTask.mustRunAfter variantOutput.processManifest
 
                 variantOutput.processResources.dependsOn manifestTask
 
-                //保存基顾包的R.txt
-                TinkerunRTask rTask = project.tasks.create("tinkerunCopy${variantName}RTxt", TinkerunRTask)
-                rTask.variantName=variantName
-                def packageTask=getPackageTask(project, variantName)
-                def assembleTask=getAssembleTask(project, variantName)
-                assembleTask.dependsOn rTask
-                rTask.mustRunAfter packageTask
+                if(!patchMode){
+                    project.logger.error("patchMode ,assemble add work to do..")
+                    variantOutput.assemble.doLast {
+
+                        project.copy {
+                            from "${project.buildDir}/intermediates/symbols/${variantName}/R.txt"
+                            into   targetDir
+                        }
+
+                        project.copy{
+                            from variant.outputs.outputFile
+                            rename { String fileName ->
+                              BASE_APK_NAME
+                            }
+                            into targetDir
+                        }
+
+                        //保存TINKER_ID与最后生成时间
+                        Properties properties = new Properties()
+                        properties.setProperty(BASE_PROPERTIES_TINKER_ID,TINKER_ID)
+                        properties.setProperty(BASE_PROPERTIES_LAST_BUILD,date())
+                        properties.store(basePropertyFile.newWriter(),"Tinkerun base build snapshot")
+
+                        project.logger.error("已经保存基础包信息")
+                    }
+                }
 
                 //resource id
                 TinkerunResourceIdTask applyResourceTask = project.tasks.create("tinkerunProcess${variantName}ResourceId", TinkerunResourceIdTask)
-
-                applyResourceTask.rTxtFile=TinkerunRTask.getRTxt(variantName)
+                applyResourceTask.cleanMode=!patchMode
+                applyResourceTask.rTxtFile=getRTxt(variantName)
                 if (variantOutput.processResources.properties['resDir'] != null) {
                     applyResourceTask.resDir = variantOutput.processResources.resDir
                 } else if (variantOutput.processResources.properties['inputResourcesDir'] != null) {
@@ -110,7 +153,6 @@ public class TinkerunPlugin implements Plugin<Project> {
                 }
                 //let applyResourceTask run after manifestTask
                 applyResourceTask.mustRunAfter manifestTask
-
                 variantOutput.processResources.dependsOn applyResourceTask
 
                 if (manifestTask.manifestPath == null || applyResourceTask.resDir == null) {
@@ -119,47 +161,97 @@ public class TinkerunPlugin implements Plugin<Project> {
 
                 def resourcesFile=variantOutput.processResources.packageOutputFile
 
-                //copy Resource
-                TinkerunCopyResourcesTask copyResourceTask = project.tasks.create("tinkerunCopy${variantName}Resource", TinkerunCopyResourcesTask)
-                copyResourceTask.variantName=variantName
-                copyResourceTask.resourcesFile=resourcesFile
-                copyResourceTask.dependsOn variantOutput.processResources
-
 
                 def applicationId=variant.applicationId
-
+                //javac 与 dex
                 TinkerunDexTask dexTask = project.tasks.create("tinkerun${variantName}Dex", TinkerunDexTask)
-                dexTask.dependsOn  copyResourceTask
+                dexTask.dependsOn  variantOutput.processResources
 
-                def resourceApk=project.file(TINKER_INTERMEDIATES+variantName+"/"+RESOURCES_FILE_NAME)
-                def apk=project.file(TINKER_INTERMEDIATES+variantName+"/"+applicationId+".apk")
+                def resourceApk=targetDir+"/"+RESOURCES_FILE_NAME
+                def patchApk=targetDir+"/"+PATCH_APK_NAME
 
 
+                //打包
+                TinkerunPatchSchemaTask tinkerunPatchBuildTask = project.tasks.create("tinkerunPatch${variantName}", TinkerunPatchSchemaTask)
+                tinkerunPatchBuildTask.signConfig = variantData.variantConfiguration.signingConfig
+                variant.outputs.each { output ->
+                    setPatchNewApkPath(configuration, output, variant, tinkerunPatchBuildTask)
+                    setPatchOutputFolder(configuration, output, variant, tinkerunPatchBuildTask)
+                }
                 tinkerunPatchBuildTask.dependsOn dexTask
+
+                //安装
                 TinkerunInstallTask installTask = project.tasks.create("tinkerunInstall${variantName}", TinkerunInstallTask)
-                installTask.resourceApk=apkFile
-                installTask.packageName=variant.applicationId
+                installTask.apk=patchApk
+                installTask.packageName=applicationId
                 installTask.dependsOn  tinkerunPatchBuildTask
 
-//                TinkerunPatchTask patchTask = project.tasks.create("tinkerunPatch${variantName}", TinkerunPatchTask)
-//                patchTask.dependsOn  installTask
 
-                def applyResourceTaskEnable=false
-                if(configuration.patchResource) {
-                    //违背了任务依赖解耦，FIXME
-                    project.gradle.startParameter.taskNames.each { task ->
-                        if (task.startsWith("tinkerun")) {
-                            applyResourceTaskEnable=true
-                        }
-                    }
-                }
-                applyResourceTask.cleanMode=!applyResourceTaskEnable
 
             }
 
         }
 
     }
+
+
+    /**
+     * Specify the output folder of tinker patch result.
+     *
+     * @param configuration the tinker configuration 'tinkerPatch'
+     * @param output the output of assemble result
+     * @param variant the variant
+     * @param tinkerPatchBuildTask the task that tinker patch uses
+     */
+    void setPatchOutputFolder(configuration, output, variant, tinkerPatchBuildTask) {
+        File parentFile = output.outputFile
+        String outputFolder = "${configuration.outputFolder}";
+        if (!Utils.isNullOrNil(outputFolder)) {
+            outputFolder = "${outputFolder}/${TypedValue.PATH_DEFAULT_OUTPUT}/${variant.dirName}"
+        } else {
+            outputFolder =
+                    "${parentFile.getParentFile().getParentFile().getAbsolutePath()}/${TypedValue.PATH_DEFAULT_OUTPUT}/${variant.dirName}"
+        }
+        tinkerPatchBuildTask.outputFolder = outputFolder
+    }
+
+    void reflectAapt2Flag() {
+        try {
+            def booleanOptClazz = Class.forName('com.android.build.gradle.options.BooleanOption')
+            def enableAAPT2Field = booleanOptClazz.getDeclaredField('ENABLE_AAPT2')
+            enableAAPT2Field.setAccessible(true)
+            def enableAAPT2EnumObj = enableAAPT2Field.get(null)
+            def defValField = enableAAPT2EnumObj.getClass().getDeclaredField('defaultValue')
+            defValField.setAccessible(true)
+            defValField.set(enableAAPT2EnumObj, false)
+        } catch (Throwable thr) {
+            project.logger.error("relectAapt2Flag error: ${thr.getMessage()}.")
+        }
+    }
+
+    /**
+     * Specify the new apk path. If the new apk file is specified by {@code tinkerPatch.buildConfig.newApk},
+     * just use it as the new apk input for tinker patch, otherwise use the assemble output.
+     *
+     * @param project the project which applies this plugin
+     * @param configuration the tinker configuration 'tinkerPatch'
+     * @param output the output of assemble result
+     * @param variant the variant
+     * @param tinkerPatchBuildTask the task that tinker patch uses
+     */
+    void setPatchNewApkPath(configuration, output, variant, tinkerPatchBuildTask) {
+        def newApkPath = configuration.newApk
+        if (!Utils.isNullOrNil(newApkPath)) {
+            if (FileOperation.isLegalFile(newApkPath)) {
+                tinkerPatchBuildTask.buildApkPath = newApkPath
+                return
+            }
+        }
+
+        tinkerPatchBuildTask.buildApkPath = output.outputFile
+//        tinkerPatchBuildTask.dependsOn variant.assemble
+    }
+
 
     Task getInstantRunTask(Project project, String variantName) {
         String instantRunTask = "transformClassesWithInstantRunFor${variantName}"
@@ -179,6 +271,10 @@ public class TinkerunPlugin implements Plugin<Project> {
     Task getAssembleTask(Project project,String variantName){
         String assemble = "assemble${variantName}"
         return project.tasks.findByName(assemble)
+    }
+
+     static String date() {
+         return System.currentTimeMillis()+""
     }
 
 }
