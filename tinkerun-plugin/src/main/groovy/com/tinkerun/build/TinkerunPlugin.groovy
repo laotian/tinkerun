@@ -160,7 +160,6 @@ public class TinkerunPlugin implements Plugin<Project> {
                     throw new RuntimeException("manifestTask.manifestPath or applyResourceTask.resDir is null.")
                 }
 
-                def resourcesFile=variantOutput.processResources.packageOutputFile
                 def applicationId=variant.applicationId
 
                 //javac 与 dex
@@ -173,17 +172,17 @@ public class TinkerunPlugin implements Plugin<Project> {
 
                 def resourceApk=targetDir+"/"+RESOURCES_FILE_NAME
                 def patchApk=targetDir+"/"+PATCH_APK_NAME
-
                 //打包
                 TinkerunPatchSchemaTask tinkerunPatchBuildTask = project.tasks.create("tinkerunPatch${variantName}", TinkerunPatchSchemaTask)
                 tinkerunPatchBuildTask.signConfig = variantData.variantConfiguration.signingConfig
-                variant.outputs.each { output ->
-                    setPatchNewApkPath(configuration, output, variant, tinkerunPatchBuildTask)
-                    setPatchOutputFolder(configuration, output, variant, tinkerunPatchBuildTask)
-                }
+                tinkerunPatchBuildTask.outputFolder=targetDir
+                tinkerunPatchBuildTask.buildApkPath=resourceApk
+                tinkerunPatchBuildTask.tinkerId=TINKER_ID
+                tinkerunPatchBuildTask.resourcesFile=variantOutput.processResources.packageOutputFile
+                tinkerunPatchBuildTask.patchApk=patchApk
                 tinkerunPatchBuildTask.dependsOn dexTask
 
-                //安装
+                //安装T
                 TinkerunInstallTask installTask = project.tasks.create("tinkerunInstall${variantName}", TinkerunInstallTask)
                 installTask.apk=patchApk
                 installTask.packageName=variant.applicationId
@@ -198,26 +197,6 @@ public class TinkerunPlugin implements Plugin<Project> {
     }
 
 
-    /**
-     * Specify the output folder of tinker patch result.
-     *
-     * @param configuration the tinker configuration 'tinkerPatch'
-     * @param output the output of assemble result
-     * @param variant the variant
-     * @param tinkerPatchBuildTask the task that tinker patch uses
-     */
-    void setPatchOutputFolder(configuration, output, variant, tinkerPatchBuildTask) {
-        File parentFile = output.outputFile
-        String outputFolder = "${configuration.outputFolder}";
-        if (!Utils.isNullOrNil(outputFolder)) {
-            outputFolder = "${outputFolder}/${TypedValue.PATH_DEFAULT_OUTPUT}/${variant.dirName}"
-        } else {
-            outputFolder =
-                    "${parentFile.getParentFile().getParentFile().getAbsolutePath()}/${TypedValue.PATH_DEFAULT_OUTPUT}/${variant.dirName}"
-        }
-        tinkerPatchBuildTask.outputFolder = outputFolder
-    }
-
     void reflectAapt2Flag() {
         try {
             def booleanOptClazz = Class.forName('com.android.build.gradle.options.BooleanOption')
@@ -231,30 +210,6 @@ public class TinkerunPlugin implements Plugin<Project> {
             project.logger.error("relectAapt2Flag error: ${thr.getMessage()}.")
         }
     }
-
-    /**
-     * Specify the new apk path. If the new apk file is specified by {@code tinkerPatch.buildConfig.newApk},
-     * just use it as the new apk input for tinker patch, otherwise use the assemble output.
-     *
-     * @param project the project which applies this plugin
-     * @param configuration the tinker configuration 'tinkerPatch'
-     * @param output the output of assemble result
-     * @param variant the variant
-     * @param tinkerPatchBuildTask the task that tinker patch uses
-     */
-    void setPatchNewApkPath(configuration, output, variant, tinkerPatchBuildTask) {
-        def newApkPath = configuration.newApk
-        if (!Utils.isNullOrNil(newApkPath)) {
-            if (FileOperation.isLegalFile(newApkPath)) {
-                tinkerPatchBuildTask.buildApkPath = newApkPath
-                return
-            }
-        }
-
-        tinkerPatchBuildTask.buildApkPath = output.outputFile
-//        tinkerPatchBuildTask.dependsOn variant.assemble
-    }
-
 
     Task getInstantRunTask(Project project, String variantName) {
         String instantRunTask = "transformClassesWithInstantRunFor${variantName}"

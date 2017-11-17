@@ -18,6 +18,7 @@ package com.tinkerun.build.task
 import com.tencent.tinker.build.patch.InputParam
 import com.tencent.tinker.build.patch.Runner
 import com.tencent.tinker.build.patch.TinkerunRunner
+import com.tinkerun.build.TinkerunPlugin
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.TaskAction
@@ -32,19 +33,34 @@ public class TinkerunPatchSchemaTask extends DefaultTask {
     String buildApkPath
     String outputFolder
     def signConfig
+    def resourcesFile //resources.ap_
+    def tinkerId
+    def patchApk
 
     public TinkerunPatchSchemaTask() {
         description = 'Assemble Tinker Patch'
         group = 'tinkerun'
         outputs.upToDateWhen { false }
-//        configuration = project.tinkerPatch
-
         android = project.extensions.android
     }
 
 
     @TaskAction
     def tinkerPatch() {
+
+        //复制resources.ap_
+        project.copy {
+            from resourcesFile
+            rename{String fileName ->
+                TinkerunPlugin.RESOURCES_FILE_NAME
+            }
+            into outputFolder
+        }
+
+        //FIXME
+        if(1<2) return ;
+
+        //生成patch.zip
         configuration.checkParameter()
         configuration.buildConfig.checkParameter()
         configuration.res.checkParameter()
