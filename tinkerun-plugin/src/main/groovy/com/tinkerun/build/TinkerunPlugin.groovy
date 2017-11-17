@@ -1,11 +1,14 @@
-package com.tinkerun.build;
+package com.tinkerun.build
 
+import com.tencent.tinker.build.util.FileOperation
+import com.tencent.tinker.build.util.TypedValue
+import com.tencent.tinker.build.util.Utils;
 import com.tinkerun.build.extension.*
 import com.tinkerun.build.task.TinkerunCopyResourcesTask
 import com.tinkerun.build.task.TinkerunDexTask
 import com.tinkerun.build.task.TinkerunInstallTask
 import com.tinkerun.build.task.TinkerunManifestTask
-import com.tinkerun.build.task.TinkerunPackageTask
+import com.tinkerun.build.task.TinkerunPatchSchemaTask
 import com.tinkerun.build.task.TinkerunRTask
 import com.tinkerun.build.task.TinkerunResourceIdTask
 import com.tinkerun.build.task.TinkerunPatchTask
@@ -24,6 +27,7 @@ public class TinkerunPlugin implements Plugin<Project> {
     public static final String TINKER_INTERMEDIATES = "build/intermediates/tinkerun_intermediates/"
 
     public static final String RESOURCES_FILE_NAME="resources.apk"
+    public static final String PATH_DEFAULT_OUTPUT="tinkerunPatch";
 
     @Override
     public void apply(Project project) {
@@ -64,11 +68,14 @@ public class TinkerunPlugin implements Plugin<Project> {
 
                 // Add this proguard settings file to the list
 
+                TinkerunPatchSchemaTask tinkerunPatchBuildTask = project.tasks.create("tinkerunPatch${variantName}", TinkerunPatchSchemaTask)
 
-//                variant.outputs.each { output ->
-//                    setPatchNewApkPath(configuration, output, variant, tinkerPatchBuildTask)
-//                    setPatchOutputFolder(configuration, output, variant, tinkerPatchBuildTask)
-//                }
+                tinkerunPatchBuildTask.signConfig = variantData.variantConfiguration.signingConfig
+
+                variant.outputs.each { output ->
+                    setPatchNewApkPath(configuration, output, variant, tinkerunPatchBuildTask)
+                    setPatchOutputFolder(configuration, output, variant, tinkerunPatchBuildTask)
+                }
 
                 // Create a task to add a build TINKER_ID to AndroidManifest.xml
                 // This task must be called after "process${variantName}Manifest", since it
@@ -127,21 +134,15 @@ public class TinkerunPlugin implements Plugin<Project> {
                 def resourceApk=project.file(TINKER_INTERMEDIATES+variantName+"/"+RESOURCES_FILE_NAME)
                 def apk=project.file(TINKER_INTERMEDIATES+variantName+"/"+applicationId+".apk")
 
-                //打包，签名
-                TinkerunPackageTask tinkerunPackageTask = project.tasks.create("tinkerunPackage${variantName}", TinkerunPackageTask)
-                tinkerunPackageTask.resourceApk=resourceApk
-                tinkerunPackageTask.apk=apk
-                tinkerunPackageTask.packageName=applicationId
-                tinkerunPackageTask.dependsOn dexTask
 
-                //上传
+                tinkerunPatchBuildTask.dependsOn dexTask
                 TinkerunInstallTask installTask = project.tasks.create("tinkerunInstall${variantName}", TinkerunInstallTask)
-                installTask.apk=apk
+                installTask.resourceApk=apkFile
                 installTask.packageName=variant.applicationId
-                installTask.dependsOn  tinkerunPackageTask
+                installTask.dependsOn  tinkerunPatchBuildTask
 
-                TinkerunPatchTask patchTask = project.tasks.create("tinkerunPatch${variantName}", TinkerunPatchTask)
-                patchTask.dependsOn  installTask
+//                TinkerunPatchTask patchTask = project.tasks.create("tinkerunPatch${variantName}", TinkerunPatchTask)
+//                patchTask.dependsOn  installTask
 
                 def applyResourceTaskEnable=false
                 if(configuration.patchResource) {

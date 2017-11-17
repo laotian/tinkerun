@@ -11,11 +11,7 @@ dependencies {
 //    compile project(':tinker-build:tinker-patch-lib')
     compile 'com.google.gradle:osdetector-gradle-plugin:1.2.1'
     compile 'com.android.tools.build:gradle:2.1.0'
-    compile("com.tencent.tinker:tinker-patch-lib:${TINKER_VERSION}") { changing = true }
-    compile("com.tencent.tinker:tinker-commons:${TINKER_VERSION}") { changing = true }
-    compile("com.tencent.tinker:tinker-ziputils:${TINKER_VERSION}") { changing = true }
-    compile("com.tencent.tinker:aosp-dexutils:${TINKER_VERSION}") { changing = true }
-    compile("com.tencent.tinker:bsdiff-util:${TINKER_VERSION}") { changing = true }
+    compile project(":tinkerun-patch-lib")
 }
 
 repositories {
