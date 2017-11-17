@@ -11,6 +11,6 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         MultiDex.install(this);
-        Log.d("MyApplication","onCreate2..");
+        Log.d("MyApplication","onCreate23..");
     }
 }

@@ -17,7 +17,7 @@ public class MainActivity extends Activity {
 
        int a=100;
         Toast.makeText(this,getResources().getText(R.string.zy),Toast.LENGTH_LONG).show();
-        System.out.println("yes");
+        System.out.println("yes3332122222");
     }
 
 }

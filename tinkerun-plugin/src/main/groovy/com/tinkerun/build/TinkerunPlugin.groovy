@@ -13,6 +13,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.tasks.compile.JavaCompile
 
 /**
  *
@@ -92,7 +93,7 @@ public class TinkerunPlugin implements Plugin<Project> {
                 def basePropertyFile=project.file(getTargetDir(variantName)+BASE_PROPERTIES)
                 // Add this proguard settings file to the list
                 def TINKER_ID="TINKERUN_"+date()
-                def LAST_BUILD
+                def LAST_BUILD=date()
                 if(patchMode && basePropertyFile.exists()){
                     Properties properties = new Properties()
                     properties.load(basePropertyFile.newReader())
@@ -160,16 +161,17 @@ public class TinkerunPlugin implements Plugin<Project> {
                 }
 
                 def resourcesFile=variantOutput.processResources.packageOutputFile
-
-
                 def applicationId=variant.applicationId
+
                 //javac 与 dex
                 TinkerunDexTask dexTask = project.tasks.create("tinkerun${variantName}Dex", TinkerunDexTask)
                 dexTask.dependsOn  variantOutput.processResources
+                dexTask.javaCompile= variant.getJavaCompiler()
+                dexTask.lastBuildTime=Long.valueOf(LAST_BUILD)
+                dexTask.applicationVariant=variant
 
                 def resourceApk=targetDir+"/"+RESOURCES_FILE_NAME
                 def patchApk=targetDir+"/"+PATCH_APK_NAME
-
 
                 //打包
                 TinkerunPatchSchemaTask tinkerunPatchBuildTask = project.tasks.create("tinkerunPatch${variantName}", TinkerunPatchSchemaTask)
@@ -183,7 +185,7 @@ public class TinkerunPlugin implements Plugin<Project> {
                 //安装
                 TinkerunInstallTask installTask = project.tasks.create("tinkerunInstall${variantName}", TinkerunInstallTask)
                 installTask.apk=patchApk
-                installTask.packageName=applicationId
+                installTask.packageName=variant.applicationId
                 installTask.dependsOn  tinkerunPatchBuildTask
 
 
