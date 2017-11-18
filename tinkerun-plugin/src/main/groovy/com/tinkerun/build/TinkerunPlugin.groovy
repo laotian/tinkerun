@@ -10,6 +10,8 @@ import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.file.FileCollection
+import org.gradle.api.tasks.compile.JavaCompile
 
 /**
  *
@@ -130,6 +132,9 @@ public class TinkerunPlugin implements Plugin<Project> {
                             into targetDir
                         }
 
+                        //清理
+                        project.file(targetDir+"/output/").deleteDir()
+
                         //保存TINKER_ID与最后生成时间
                         Properties properties = new Properties()
                         properties.setProperty(BASE_PROPERTIES_TINKER_ID,TINKER_ID)
@@ -161,9 +166,50 @@ public class TinkerunPlugin implements Plugin<Project> {
 
                 def applicationId=variant.applicationId
 
+                JavaCompile javaCompile=variant.getJavaCompiler()
+                JavaCompile javacTask=  project.tasks.create(name: "tinkerunJavac${variantName}",type:JavaCompile,group: "tinkerun")
+                FileCollection originalSource=javaCompile.source
+                File originalDestination=javaCompile.getDestinationDir()
+                FileCollection originalClassPath=javaCompile.getClasspath()
+//                project.logger.error(" originalClassPath,file size=="+originalClassPath.files.size())
+//                originalClassPath.files.each {File file->
+//                    project.logger.error(" originalClassPathfile="+file)
+//                }
+//
+//                project.logger.error("getDestinationDir="+javaCompile.getDestinationDir())
+
+                def classesDir=targetDir+"/classes/"
+                project.file(classesDir).delete()
+
+                def androidJar= "${project.android.getSdkDirectory()}/platforms/${project.android.compileSdkVersion}/android.jar"
+                project.logger.error("androidJar="+androidJar)
+                FileCollection incrementalSource=  originalSource.filter {
+                    it.lastModified()>Long.valueOf(LAST_BUILD)
+                }
+                javacTask.setSource(incrementalSource)
+                javacTask.setDestinationDir(project.file(classesDir))
+                javacTask.setClasspath(originalClassPath+project.files(originalDestination)+project.files(androidJar))
+                javacTask.options.compilerArgs=javaCompile.options.compilerArgs
+                javacTask.options.sourcepath=javaCompile.options.sourcepath
+                javacTask.options.debug=javaCompile.options.debug
+                javacTask.targetCompatibility=javaCompile.targetCompatibility
+                javacTask.sourceCompatibility=javaCompile.sourceCompatibility
+                javacTask.options.bootClasspath=javaCompile.options.bootClasspath
+//                javacTask.targetCompatibility=javaCompile.targetCompatibility
+
+//                task compileOne (type: JavaCompile) {
+//                    source = sourceSets.main.java.srcDirs
+//                    include 'some/pkg/ClassTwo.java'
+//                    classpath = sourceSets.main.compileClasspath
+//                    destinationDir = sourceSets.main.output.classesDir
+//                }
+//
+//                compileOne.options.compilerArgs = ["-sourcepath", "$projectDir/src/main/java"]
+                javacTask.dependsOn variantOutput.processResources
+
                 //javac 与 dex
                 TinkerunDexTask dexTask = project.tasks.create("tinkerun${variantName}Dex", TinkerunDexTask)
-                dexTask.dependsOn  variantOutput.processResources
+                dexTask.dependsOn  javacTask
                 dexTask.javaCompile= variant.getJavaCompiler()
                 dexTask.lastBuildTime=Long.valueOf(LAST_BUILD)
                 dexTask.applicationVariant=variant

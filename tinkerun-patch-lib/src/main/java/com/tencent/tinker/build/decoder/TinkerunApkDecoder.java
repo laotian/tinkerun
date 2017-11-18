@@ -74,6 +74,7 @@ public class TinkerunApkDecoder extends BaseDecoder {
     }
 
     private void unzipApkFiles(File oldFile, File newFile) throws IOException, TinkerPatchException {
+       //base.apk不会变化 FIXME 不应该重复解压缩基础包
         unzipApkFile(oldFile, this.mOldApkDir);
         unzipApkFile(newFile, this.mNewApkDir);
     }

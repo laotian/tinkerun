@@ -25,7 +25,7 @@ public class TinkerunDexTask extends DefaultTask {
     ApplicationVariant applicationVariant
     String targetDir
     long lastBuildTime
-    def classesDir
+    String classesDir
     String baseName
     String dirName
 
@@ -37,66 +37,65 @@ public class TinkerunDexTask extends DefaultTask {
 
     @TaskAction
     def dex() {
-
+//
        dirName=applicationVariant.getDirName()
        baseName=applicationVariant.getBaseName()
-//        List<File> keepJavaFile=new ArrayList<>()
-//        applicationVariant.sourceSets.each {
-//            Collection<File> dirs= it.getJavaDirectories();
-//            dirs.each {File dir->
-//                FileUtils.getOlderThan(lastBuildTime,dir,keepJavaFile);
-//            }
+////        List<File> keepJavaFile=new ArrayList<>()
+////        applicationVariant.sourceSets.each {
+////            Collection<File> dirs= it.getJavaDirectories();
+////            dirs.each {File dir->
+////                FileUtils.getOlderThan(lastBuildTime,dir,keepJavaFile);
+////            }
+////        }
+//
+//
+//        FileCollection originalSource=javaCompile.source
+//        File originalDestination=javaCompile.getDestinationDir()
+//        FileCollection originalClassPath=javaCompile.getClasspath()
+//
+//
+//
+//
+//////        JavaCompile javaCompile= variant.getJavaCompiler()
+////        project.logger.error("sourceCompatibility ="+javaCompile.sourceCompatibility)
+////        project.logger.error("compilerArgs="+javaCompile.options.compilerArgs)
+////        javaCompile.source.asList().each {File s->
+////            project.logger.error("source="+s.getAbsolutePath())
+////        }
+////        javaCompile.getClasspath().each {File f->
+////            project.logger.error("getClasspath="+f.getAbsolutePath())
+////        }
+//
+//        project.logger.error("getDestinationDir="+javaCompile.getDestinationDir())
+//
+//        classesDir=targetDir+"/classes/"
+//        project.file(classesDir).delete()
+//        project.logger.error("copy class file begin...")
+//        project.copy{
+//            from originalDestination
+//            into project.file(classesDir)
 //        }
-
-
-        FileCollection originalSource=javaCompile.source
-        File originalDestination=javaCompile.getDestinationDir()
-        FileCollection originalClassPath=javaCompile.getClasspath()
-
-
-
-
-
-////        JavaCompile javaCompile= variant.getJavaCompiler()
-//        project.logger.error("sourceCompatibility ="+javaCompile.sourceCompatibility)
-//        project.logger.error("compilerArgs="+javaCompile.options.compilerArgs)
-//        javaCompile.source.asList().each {File s->
-//            project.logger.error("source="+s.getAbsolutePath())
+//        originalDestination.delete()
+//        project.logger.error("copy class file end...")
+//        javaCompile.setClasspath(originalClassPath+project.files(classesDir))
+//        FileCollection incrementalSource=  originalSource.filter {
+//            it.lastModified()>lastBuildTime
 //        }
-//        javaCompile.getClasspath().each {File f->
-//            project.logger.error("getClasspath="+f.getAbsolutePath())
+//
+//        project.logger.error("incrementalSource size="+incrementalSource.files.size())
+//        incrementalSource.files.each {File file->
+//            project.logger.error("incrementalSource file="+file.getAbsolutePath())
 //        }
-
-        project.logger.error("getDestinationDir="+javaCompile.getDestinationDir())
-
-        classesDir=targetDir+"/classes/"
-        project.file(classesDir).delete()
-        project.logger.error("copy class file begin...")
-        project.copy{
-            from originalDestination
-            into project.file(classesDir)
-        }
-        originalDestination.delete()
-        project.logger.error("copy class file end...")
-        javaCompile.setClasspath(originalClassPath+project.files(classesDir))
-        FileCollection incrementalSource=  originalSource.filter {
-            it.lastModified()>lastBuildTime
-        }
-
-        project.logger.error("incrementalSource size="+incrementalSource.files.size())
-        incrementalSource.files.each {File file->
-            project.logger.error("incrementalSource file="+file.getAbsolutePath())
-        }
-
-        javaCompile.setSource(incrementalSource)
-//        javaCompile.setDestinationDir(project.file(classesDir))
-        long currentBuildTime=System.currentTimeMillis();
-        javaCompile.setDidWork(false)
-        javaCompile.execute()
-        javaCompile.setSource(originalSource)
-        javaCompile.setClasspath(originalClassPath)
-//        javaCompile.setDestinationDir(originalDestination)
-        javaCompile.setDidWork(false)
+//
+//        javaCompile.setSource(incrementalSource)
+////        javaCompile.setDestinationDir(project.file(classesDir))
+//        long currentBuildTime=System.currentTimeMillis();
+//        javaCompile.setDidWork(false)
+//        javaCompile.execute()
+//        javaCompile.setSource(originalSource)
+//        javaCompile.setClasspath(originalClassPath)
+////        javaCompile.setDestinationDir(originalDestination)
+//        javaCompile.setDidWork(false)
 
 
 //        project.fileTree(dir:project.relativePath(javaCompile.getDestinationDir())).each {File file->
@@ -107,30 +106,28 @@ public class TinkerunDexTask extends DefaultTask {
 //            }
 //        }
 
+        classesDir=targetDir+"/classes/"
         def task = project.tasks.create("tinkerunZip"  +baseName.capitalize() , Jar.class, new Action<Jar>() {
 
             @Override
             void execute(Jar zip) {
-//                project.logger.error("classes="+file)
-                zip.from(originalDestination)
+                zip.from(classesDir)
                 zip.setDestinationDir(project.file(targetDir))
                 zip.setArchiveName(jarName)
             }
         })
         task.execute()
-        project.logger.error("copy class file back begin...")
-        originalDestination.delete()
-        project.copy{
-            from  project.file(classesDir)
-            into originalDestination
-        }
-        project.logger.error("copy class file back end...")
+//        project.logger.error("copy class file back begin...")
+//        originalDestination.delete()
+//        project.copy{
+//            from  project.file(classesDir)
+//            into originalDestination
+//        }
+//        project.logger.error("copy class file back end...")
         project.file(classesDir).delete()
         File jarFile=project.file(targetDir+"/"+jarName)
         doDex(jarFile,project.android.getDexOptions())
         jarFile.delete()
-
-
     }
 
 
