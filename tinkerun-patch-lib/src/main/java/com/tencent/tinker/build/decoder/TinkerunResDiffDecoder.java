@@ -83,10 +83,10 @@ public class TinkerunResDiffDecoder extends BaseDecoder {
 
 
     @Override
-    public boolean patch(File oldFile, File newFile) throws IOException, TinkerPatchException {
+    public boolean patch(File oldFile, File newFile) throws Exception {
         String name = getRelativePathStringToNewFile(newFile);
 
-        Logger.e("res, patch,oldFile="+oldFile.getAbsolutePath()+",newFile="+newFile.getAbsolutePath());
+//        Logger.e("res, patch,oldFile="+oldFile.getAbsolutePath()+",newFile="+newFile.getAbsolutePath());
         //actually, it won't go below
         if (newFile == null || !newFile.exists()) {
             String relativeStringByOldDir = getRelativePathStringToOldFile(oldFile);

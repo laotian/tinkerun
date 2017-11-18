@@ -140,7 +140,7 @@ public class TinkerunPlugin implements Plugin<Project> {
                     }
                 }
 
-                configuration.oldApk=targetDir+"/"+BASE_APK_NAME
+//                configuration.oldApk=targetDir+"/"+BASE_APK_NAME
 
                 //resource id
                 TinkerunResourceIdTask applyResourceTask = project.tasks.create("tinkerunProcess${variantName}ResourceId", TinkerunResourceIdTask)
@@ -177,6 +177,7 @@ public class TinkerunPlugin implements Plugin<Project> {
                 tinkerunPatchBuildTask.signConfig = variantData.variantConfiguration.signingConfig
                 tinkerunPatchBuildTask.outputFolder=outputDir
                 tinkerunPatchBuildTask.targetDir=targetDir
+                tinkerunPatchBuildTask.oldApk=targetDir+"/"+BASE_APK_NAME
                 tinkerunPatchBuildTask.buildApkPath=resourceApk
                 tinkerunPatchBuildTask.tinkerId=TINKER_ID
                 tinkerunPatchBuildTask.resourcesFile=variantOutput.processResources.packageOutputFile

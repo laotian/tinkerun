@@ -36,6 +36,7 @@ public class TinkerunPatchSchemaTask extends DefaultTask {
     def signConfig
     def resourcesFile //resources.ap_
     def tinkerId
+    def oldApk
 
     public TinkerunPatchSchemaTask() {
         description = 'Assemble Tinker Patch'
@@ -72,13 +73,13 @@ public class TinkerunPatchSchemaTask extends DefaultTask {
                     .setStorepass(signConfig.storePassword)
         }
 
-        builder.setOldApk(configuration.oldApk)
+        builder.setOldApk(oldApk)
                .setNewApk(buildApkPath)
                .setOutBuilder(outputFolder)
                .setIgnoreWarning(true)
                .setDexFilePattern(new ArrayList<String>(configuration.pattern))
                .setIsProtectedApp(true)
-               .setIsComponentHotplugSupported(configuration.supportHotplugComponent)
+//               .setIsComponentHotplugSupported(configuration.supportHotplugComponent)
                .setDexLoaderPattern(new ArrayList<String>(configuration.loader))
                .setDexIgnoreWarningLoaderPattern(new ArrayList<String>())
                .setDexMode(configuration.dexMode)

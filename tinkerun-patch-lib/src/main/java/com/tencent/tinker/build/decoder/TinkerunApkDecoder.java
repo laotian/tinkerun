@@ -34,9 +34,9 @@ public class TinkerunApkDecoder extends BaseDecoder {
     private final File mNewApkDir;
 
     private final ManifestDecoder manifestDecoder;
-    private final BaseDecoder dexPatchDecoder;
+    private final TinkerunDexDiffDecoder dexPatchDecoder;
     private final BsDiffDecoder soPatchDecoder;
-    private final BaseDecoder resPatchDecoder;
+    private final TinkerunResDiffDecoder resPatchDecoder;
 
     /**
      * if resource's file is also contain in dex or library pattern,
