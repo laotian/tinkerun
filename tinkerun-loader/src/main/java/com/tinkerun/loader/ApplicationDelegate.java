@@ -12,9 +12,9 @@ import com.tencent.tinker.loader.app.DefaultApplicationLike;
 import com.tencent.tinker.loader.shareutil.ShareConstants;
 import com.tinkerun.io.ManifestParser;
 import com.tinkerun.patch.TinkerunResultService;
-import com.tinkerun.patch.TinkerunUpgradePatch;
+import com.tencent.tinker.lib.patch.TinkerunUpgradePatch;
 
-import java.util.HashMap;
+import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -26,9 +26,13 @@ public class ApplicationDelegate extends DefaultApplicationLike {
 
     private final Application userApplication;
     private static final String TINKERUN_APP="TINKERUN_APP";
+
+    public static ApplicationDelegate sInstance;
+
     public ApplicationDelegate(Application application, int tinkerFlags, boolean tinkerLoadVerifyFlag, long applicationStartElapsedTime, long applicationStartMillisTime, Intent tinkerResultIntent) {
         super(application, tinkerFlags, tinkerLoadVerifyFlag, applicationStartElapsedTime, applicationStartMillisTime, tinkerResultIntent);
         userApplication=createApplication();
+        sInstance=this;
     }
 
     //Create User_defined Application
@@ -60,11 +64,23 @@ public class ApplicationDelegate extends DefaultApplicationLike {
     }
 
     private void installTinker(){
-        //TODO  清除Tinker，安装自己的
-        Tinker tinker = new Tinker.Builder(getApplication()).tinkerFlags(ShareConstants.TINKER_DEX_AND_LIBRARY).build();
+        //清理用户可能装过的Tinker
+        if(Tinker.isTinkerInstalled()){
+            try {
+                Field tinkerInstanceField= Tinker.class.getDeclaredField("sInstance");
+                tinkerInstanceField.setAccessible(true);
+                tinkerInstanceField.set(null,null);
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        Tinker tinker = new Tinker.Builder(getApplication()).tinkerFlags(ShareConstants.TINKER_ENABLE_ALL).build();
         Tinker.create(tinker);
-        tinker.install(getTinkerResultIntent(),TinkerunResultService.class,new TinkerunUpgradePatch());
+        tinker.install(ApplicationDelegate.sInstance.getTinkerResultIntent(),TinkerunResultService.class,new TinkerunUpgradePatch());
     }
+
 
     @Override
     public void onLowMemory() {

@@ -5,8 +5,11 @@ import android.content.Intent;
 import android.os.Environment;
 import android.util.Log;
 
+import com.tencent.tinker.lib.patch.TinkerunUpgradePatch;
 import com.tencent.tinker.lib.tinker.Tinker;
 import com.tencent.tinker.lib.tinker.TinkerInstaller;
+import com.tencent.tinker.loader.shareutil.ShareConstants;
+import com.tinkerun.loader.ApplicationDelegate;
 
 import java.io.File;
 
@@ -28,6 +31,7 @@ public class TinkerunDaemonService extends IntentService {
         String patchLocation= Environment.getExternalStorageDirectory()+"/tinkerun/"+getApplicationContext().getApplicationInfo().packageName+"/patch.apk";
         File patch=new File(patchLocation);
         if(patch.exists() && patch.canRead()){
+//            installTinker();
             TinkerInstaller.onReceiveUpgradePatch(this,patch.getAbsolutePath());
 //            Tinker.with(this).
             Log.e("Tinkerun","found resource file="+patch.getAbsolutePath());
@@ -38,4 +42,6 @@ public class TinkerunDaemonService extends IntentService {
 
 
     }
+
+
 }

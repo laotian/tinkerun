@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.tinkerun.patch;
+package com.tencent.tinker.lib.patch;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -46,17 +46,16 @@ import java.util.zip.ZipFile;
 /**
  * Created by zhangshaowen on 2016/8/8.
  */
-public class ResDiffPatchInternal extends BasePatchInternal {
+public class TinkerunResDiffPatchInternal extends BasePatchInternal {
 
-    protected static final String TAG = "Tinker.ResDiffPatchInternal";
+    protected static final String TAG = "Tinker.TinkerunResDiffPatchInternal";
 
     protected static boolean tryRecoverResourceFiles(Tinker manager, ShareSecurityCheck checker, Context context,
                                                      String patchVersionDirectory, File patchFile) {
-//老田修改
-//        if (!manager.isEnabledForResource()) {
-//            TinkerLog.w(TAG, "patch recover, resource is not enabled");
-//            return true;
-//        }
+        if (!manager.isEnabledForResource()) {
+            TinkerLog.w(TAG, "patch recover, resource is not enabled");
+            return true;
+        }
         String resourceMeta = checker.getMetaContentMap().get(RES_META_FILE);
 
         if (resourceMeta == null || resourceMeta.length() == 0) {

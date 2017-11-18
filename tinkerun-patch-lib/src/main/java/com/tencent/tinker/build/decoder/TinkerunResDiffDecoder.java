@@ -84,60 +84,73 @@ public class TinkerunResDiffDecoder extends BaseDecoder {
 
     @Override
     public boolean patch(File oldFile, File newFile) throws IOException, TinkerPatchException {
-//        String name = getRelativePathStringToNewFile(newFile);
-//
-//        //actually, it won't go below
-//        if (newFile == null || !newFile.exists()) {
-//            String relativeStringByOldDir = getRelativePathStringToOldFile(oldFile);
-//            if (Utils.checkFileInPattern(config.mResIgnoreChangePattern, relativeStringByOldDir)) {
-//                Logger.e("found delete resource: " + relativeStringByOldDir + " ,but it match ignore change pattern, just ignore!");
-//                return false;
-//            }
-//            deletedSet.add(relativeStringByOldDir);
-//            writeResLog(newFile, oldFile, TypedValue.DEL);
-//            return true;
-//        }
-//
-//        File outputFile = getOutputPath(newFile).toFile();
-//
-//        if (oldFile == null || !oldFile.exists()) {
-//            if (Utils.checkFileInPattern(config.mResIgnoreChangePattern, name)) {
-//                Logger.e("found add resource: " + name + " ,but it match ignore change pattern, just ignore!");
-//                return false;
-//            }
-//            FileOperation.copyFileUsingStream(newFile, outputFile);
-//            addedSet.add(name);
-//            writeResLog(newFile, oldFile, TypedValue.ADD);
-//            return true;
-//        }
-//        //both file length is 0
-//        if (oldFile.length() == 0 && newFile.length() == 0) {
-//            return false;
-//        }
-//        //new add file
-//        String newMd5 = MD5.getMD5(newFile);
-//        String oldMd5 = MD5.getMD5(oldFile);
-//
-//        //oldFile or newFile may be 0b length
-//        if (oldMd5 != null && oldMd5.equals(newMd5)) {
-//            return false;
-//        }
-//        if (Utils.checkFileInPattern(config.mResIgnoreChangePattern, name)) {
-//            Logger.d("found modify resource: " + name + ", but it match ignore change pattern, just ignore!");
-//            return false;
-//        }
-//        if (name.equals(TypedValue.RES_MANIFEST)) {
-//            Logger.d("found modify resource: " + name + ", but it is AndroidManifest.xml, just ignore!");
-//            return false;
-//        }
-//        if (name.equals(TypedValue.RES_ARSC)) {
-//            if (AndroidParser.resourceTableLogicalChange(config)) {
-//                Logger.d("found modify resource: " + name + ", but it is logically the same as original new resources.arsc, just ignore!");
-//                return false;
-//            }
-//        }
+        String name = getRelativePathStringToNewFile(newFile);
 
+        Logger.e("res, patch,oldFile="+oldFile.getAbsolutePath()+",newFile="+newFile.getAbsolutePath());
+        //actually, it won't go below
+        if (newFile == null || !newFile.exists()) {
+            String relativeStringByOldDir = getRelativePathStringToOldFile(oldFile);
+            if (Utils.checkFileInPattern(config.mResIgnoreChangePattern, relativeStringByOldDir)) {
+                Logger.e("found delete resource: " + relativeStringByOldDir + " ,but it match ignore change pattern, just ignore!");
+                return false;
+            }
+            deletedSet.add(relativeStringByOldDir);
+            writeResLog(newFile, oldFile, TypedValue.DEL);
+            return true;
+        }
+
+        File outputFile = getOutputPath(newFile).toFile();
+
+        if (oldFile == null || !oldFile.exists()) {
+            if (Utils.checkFileInPattern(config.mResIgnoreChangePattern, name)) {
+                Logger.e("found add resource: " + name + " ,but it match ignore change pattern, just ignore!");
+                return false;
+            }
+            FileOperation.copyFileUsingStream(newFile, outputFile);
+            addedSet.add(name);
+            writeResLog(newFile, oldFile, TypedValue.ADD);
+            return true;
+        }
+        //both file length is 0
+        if (oldFile.length() == 0 && newFile.length() == 0) {
+            return false;
+        }
+
+        //如果一样小文件，检查是否为同一文件
+        //FIXME 这里需要优化，根据资源文件的修改时间来决定是否比较
+        if(newFile.length()==oldFile.length()) {
+            //new add file
+            String newMd5 = MD5.getMD5(newFile);
+            String oldMd5 = MD5.getMD5(oldFile);
+
+            //oldFile or newFile may be 0b length
+            if (oldMd5 != null && oldMd5.equals(newMd5)) {
+                return false;
+            }
+            if (Utils.checkFileInPattern(config.mResIgnoreChangePattern, name)) {
+                Logger.d("found modify resource: " + name + ", but it match ignore change pattern, just ignore!");
+                return false;
+            }
+            if (name.equals(TypedValue.RES_MANIFEST)) {
+                Logger.d("found modify resource: " + name + ", but it is AndroidManifest.xml, just ignore!");
+                return false;
+            }
+//            if (name.equals(TypedValue.RES_ARSC)) {
+//                if (AndroidParser.resourceTableLogicalChange(config)) {
+//                    Logger.d("found modify resource: " + name + ", but it is logically the same as original new resources.arsc, just ignore!");
+//                    return false;
+//                }
+//            }
+        }
+        dealWithModifyFile(name, oldFile, newFile, outputFile);
         return true;
+    }
+
+    private boolean dealWithModifyFile(String name, File oldFile, File newFile, File outputFile) throws IOException {
+        modifiedSet.add(name);
+        FileOperation.copyFileUsingStream(newFile, outputFile);
+        writeResLog(newFile, oldFile, TypedValue.MOD);
+        return false;
     }
 
 
