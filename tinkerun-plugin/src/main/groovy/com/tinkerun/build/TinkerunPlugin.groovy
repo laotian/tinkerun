@@ -59,6 +59,7 @@ public class TinkerunPlugin implements Plugin<Project> {
                 def variantOutput = variant.outputs.first()
                 def variantName = variant.name.capitalize()
                 def variantData = variant.variantData
+                def variantDirName=  variant.getDirName()
 
                 //如果不能调试，比如Release模式，不启用Tinkerun
                 if(!variant.getBuildType().buildType.isDebuggable()){
@@ -117,7 +118,7 @@ public class TinkerunPlugin implements Plugin<Project> {
                     variantOutput.assemble.doLast {
 
                         project.copy {
-                            from "${project.buildDir}/intermediates/symbols/${variantName}/R.txt"
+                            from "${project.buildDir}/intermediates/symbols/${variantDirName}/R.txt"
                             into   targetDir
                         }
 

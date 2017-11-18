@@ -2,6 +2,7 @@ package com.tinkerun.loader;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.text.TextUtils;
@@ -15,6 +16,8 @@ import com.tinkerun.patch.TinkerunResultService;
 import com.tencent.tinker.lib.patch.TinkerunUpgradePatch;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -113,7 +116,17 @@ public class ApplicationDelegate extends DefaultApplicationLike {
     @Override
     public void onBaseContextAttached(Context base) {
         if(userApplication!=null){
-            userApplication.onCreate();
+            try {
+                Method methodAttach = ContextWrapper.class.getDeclaredMethod("attachBaseContext",Context.class);
+                 methodAttach.setAccessible(true);
+                methodAttach.invoke(userApplication,base);
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
         }
     }
 

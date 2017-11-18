@@ -1,5 +1,9 @@
 apply plugin: 'com.android.library'
 
+
+version rootProject.ext.VERSION_NAME
+group rootProject.ext.GROUP
+
 android {
     compileSdkVersion 24
     buildToolsVersion "26.0.2"
@@ -40,3 +44,19 @@ dependencies {
     compile("com.tencent.tinker:tinker-ziputils:${TINKER_VERSION}") { changing = true }
     compile("com.tencent.tinker:tinker-commons:${TINKER_VERSION}") { changing = true }
 }
+
+
+task buildTinkerSdk(type: Copy, dependsOn: [build]) {
+    group = "tinker"
+    from("$buildDir/outputs/aar/") {
+        include "${project.getName()}-release.aar"
+    }
+
+    into(rootProject.file("buildSdk/android/"))
+    rename { String fileName ->
+        fileName.replace("release", "${version}")
+    }
+}
+//
+apply from: rootProject.file('gradle/android-artifacts.gradle')
+//apply from: rootProject.file('gradle/gradle-mvn-push.gradle')

@@ -91,4 +91,4 @@ task buildAndPublishTinkerToLocalMaven(dependsOn: ['build', 'publishTinkerPatchP
     group = 'tinker'
 }
 
-apply from: rootProject.file('gradle/check.gradle')
+//apply from: rootProject.file('gradle/check.gradle')
