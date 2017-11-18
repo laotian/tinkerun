@@ -24,6 +24,7 @@ import com.tencent.tinker.build.info.PatchInfo;
 import com.tencent.tinker.build.util.Logger;
 import com.tencent.tinker.build.util.TinkerPatchException;
 
+import java.io.File;
 import java.io.IOException;
 
 /**

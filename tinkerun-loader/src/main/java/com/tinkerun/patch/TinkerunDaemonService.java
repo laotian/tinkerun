@@ -25,7 +25,7 @@ public class TinkerunDaemonService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         //TODO 检查SD卡权限
-        String patchLocation= Environment.getExternalStorageDirectory()+"/tinkerun/"+getApplicationContext().getApplicationInfo().packageName+".apk";
+        String patchLocation= Environment.getExternalStorageDirectory()+"/tinkerun/"+getApplicationContext().getApplicationInfo().packageName+"/patch.apk";
         File patch=new File(patchLocation);
         if(patch.exists() && patch.canRead()){
             TinkerInstaller.onReceiveUpgradePatch(this,patch.getAbsolutePath());

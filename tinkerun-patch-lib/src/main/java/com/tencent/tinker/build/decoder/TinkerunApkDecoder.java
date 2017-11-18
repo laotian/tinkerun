@@ -22,10 +22,7 @@ import com.tencent.tinker.build.util.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 
@@ -56,9 +53,9 @@ public class TinkerunApkDecoder extends BaseDecoder {
 
         //put meta files in assets
         String prePath = TypedValue.FILE_ASSETS + File.separator;
-        dexPatchDecoder = new UniqueDexDiffDecoder(config, prePath + TypedValue.DEX_META_FILE, TypedValue.DEX_LOG_FILE);
+        dexPatchDecoder = new TinkerunDexDiffDecoder(config, prePath + TypedValue.DEX_META_FILE, TypedValue.DEX_LOG_FILE);
         soPatchDecoder = new BsDiffDecoder(config, prePath + TypedValue.SO_META_FILE, TypedValue.SO_LOG_FILE);
-        resPatchDecoder = new ResDiffDecoder(config, prePath + TypedValue.RES_META_TXT, TypedValue.RES_LOG_FILE);
+        resPatchDecoder = new TinkerunResDiffDecoder(config, prePath + TypedValue.RES_META_TXT, TypedValue.RES_LOG_FILE);
         resDuplicateFiles = new ArrayList<>();
     }
 
@@ -92,18 +89,22 @@ public class TinkerunApkDecoder extends BaseDecoder {
 
     @Override
     public void onAllPatchesStart() throws  Exception{
-        manifestDecoder.onAllPatchesStart();
+//        manifestDecoder.onAllPatchesStart();
         dexPatchDecoder.onAllPatchesStart();
-        soPatchDecoder.onAllPatchesStart();
+//        soPatchDecoder.onAllPatchesStart();
         resPatchDecoder.onAllPatchesStart();
     }
 
     public boolean patch(File oldFile, File newFile) throws Exception {
         writeToLogFile(oldFile, newFile);
         //check manifest change first
-        manifestDecoder.patch(oldFile, newFile);
+//        manifestDecoder.patch(oldFile, newFile);
 
         unzipApkFiles(oldFile, newFile);
+
+        //把changed_classes.dex复制到 新的apk解压目录
+
+        Files.copy(new File(oldFile.getParentFile(),"changed_classes.dex").toPath(),new File(mNewApkDir,"changed_classes.dex").toPath(), StandardCopyOption.REPLACE_EXISTING);
 
         Files.walkFileTree(mNewApkDir.toPath(), new ApkFilesVisitor(config, mNewApkDir.toPath(), mOldApkDir.toPath(), dexPatchDecoder, soPatchDecoder, resPatchDecoder));
 
@@ -114,14 +115,14 @@ public class TinkerunApkDecoder extends BaseDecoder {
                 + "we treat it as unchanged in the new resource_out.zip", getRelativePathStringToOldFile(duplicateRes));
         }
 
-        soPatchDecoder.onAllPatchesEnd();
+//        soPatchDecoder.onAllPatchesEnd();
         dexPatchDecoder.onAllPatchesEnd();
-        manifestDecoder.onAllPatchesEnd();
+//        manifestDecoder.onAllPatchesEnd();
         resPatchDecoder.onAllPatchesEnd();
 
         //clean resources
         dexPatchDecoder.clean();
-        soPatchDecoder.clean();
+//        soPatchDecoder.clean();
         resPatchDecoder.clean();
         return true;
     }
@@ -175,19 +176,19 @@ public class TinkerunApkDecoder extends BaseDecoder {
                 }
                 return FileVisitResult.CONTINUE;
             }
-            if (Utils.checkFileInPattern(config.mSoFilePattern, patternKey)) {
-                //also treat duplicate file as unchanged
-                if (Utils.checkFileInPattern(config.mResFilePattern, patternKey) && oldFile != null) {
-                    resDuplicateFiles.add(oldFile);
-                }
-                try {
-                    soDecoder.patch(oldFile, file.toFile());
-                } catch (Exception e) {
-//                    e.printStackTrace();
-                    throw new RuntimeException(e);
-                }
-                return FileVisitResult.CONTINUE;
-            }
+//            if (Utils.checkFileInPattern(config.mSoFilePattern, patternKey)) {
+//                //also treat duplicate file as unchanged
+//                if (Utils.checkFileInPattern(config.mResFilePattern, patternKey) && oldFile != null) {
+//                    resDuplicateFiles.add(oldFile);
+//                }
+//                try {
+//                    soDecoder.patch(oldFile, file.toFile());
+//                } catch (Exception e) {
+////                    e.printStackTrace();
+//                    throw new RuntimeException(e);
+//                }
+//                return FileVisitResult.CONTINUE;
+//            }
             if (Utils.checkFileInPattern(config.mResFilePattern, patternKey)) {
                 try {
                     resDecoder.patch(oldFile, file.toFile());

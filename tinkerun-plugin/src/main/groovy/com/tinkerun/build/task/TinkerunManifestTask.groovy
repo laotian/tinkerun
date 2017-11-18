@@ -19,7 +19,6 @@ package com.tinkerun.build.task
 import com.tinkerun.build.TinkerunPlugin
 import groovy.xml.Namespace
 import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
 import org.gradle.api.tasks.TaskAction
 
 /**
@@ -30,8 +29,8 @@ import org.gradle.api.tasks.TaskAction
  */
 public class TinkerunManifestTask extends DefaultTask {
     static final String MANIFEST_XML = TinkerunPlugin.TINKER_INTERMEDIATES + "AndroidManifest.xml"
-    static final String TINKER_APP = "TINKERUN_APP"
-    static final String TINKER_ID = "TINKERUN_ID"
+    static final String TINKERUN_APP = "TINKERUN_APP"
+    static final String TINKER_ID = "TINKER_ID"
     static final String TINKERUN_APPLICATION="com.tinkerun.loader.TinkerunApplication"
     String manifestPath
     String tinkerId
@@ -52,7 +51,7 @@ public class TinkerunManifestTask extends DefaultTask {
             def applicationName = application.attributes()[ns.name]
             application.attributes()[ns.name]=TINKERUN_APPLICATION
             updateMeta(application,ns,TINKER_ID,tinkerId)
-            updateMeta(application,ns,TINKER_APP,applicationName)
+            updateMeta(application,ns,TINKERUN_APP,applicationName)
         }
         // Write the manifest file
         def printer = new XmlNodePrinter(new PrintWriter(manifestPath, "utf-8"))

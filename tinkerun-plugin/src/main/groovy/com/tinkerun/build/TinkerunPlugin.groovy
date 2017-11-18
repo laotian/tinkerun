@@ -1,8 +1,5 @@
 package com.tinkerun.build
 
-import com.tencent.tinker.build.util.FileOperation
-import com.tencent.tinker.build.util.TypedValue
-import com.tencent.tinker.build.util.Utils;
 import com.tinkerun.build.extension.*
 import com.tinkerun.build.task.TinkerunDexTask
 import com.tinkerun.build.task.TinkerunInstallTask
@@ -13,7 +10,6 @@ import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.tasks.compile.JavaCompile
 
 /**
  *
@@ -27,7 +23,7 @@ public class TinkerunPlugin implements Plugin<Project> {
     public static final String RESOURCES_FILE_NAME="resources.apk"
     public static final String PATH_DEFAULT_OUTPUT="tinkerunPatch"
     public static final String BASE_APK_NAME="base.apk"
-    public static final String PATCH_APK_NAME="patch.apk"
+    public static final String PATCH_APK_NAME="patch_signed.apk"
     public static final String BASE_PROPERTIES="base.properties"
     public static final String R_TXT="R.txt"
     public static final String BASE_PROPERTIES_TINKER_ID="tinker_id";
@@ -143,6 +139,8 @@ public class TinkerunPlugin implements Plugin<Project> {
                     }
                 }
 
+                configuration.oldApk=targetDir+"/"+BASE_APK_NAME
+
                 //resource id
                 TinkerunResourceIdTask applyResourceTask = project.tasks.create("tinkerunProcess${variantName}ResourceId", TinkerunResourceIdTask)
                 applyResourceTask.cleanMode=!patchMode
@@ -171,20 +169,22 @@ public class TinkerunPlugin implements Plugin<Project> {
                 dexTask.targetDir=getTargetDir(variantName)
 
                 def resourceApk=targetDir+"/"+RESOURCES_FILE_NAME
-                def patchApk=targetDir+"/"+PATCH_APK_NAME
+                def outputDir=targetDir+"/output/"
+                def patchApk=outputDir+PATCH_APK_NAME
                 //打包
                 TinkerunPatchSchemaTask tinkerunPatchBuildTask = project.tasks.create("tinkerunPatch${variantName}", TinkerunPatchSchemaTask)
                 tinkerunPatchBuildTask.signConfig = variantData.variantConfiguration.signingConfig
-                tinkerunPatchBuildTask.outputFolder=targetDir
+                tinkerunPatchBuildTask.outputFolder=outputDir
+                tinkerunPatchBuildTask.targetDir=targetDir
                 tinkerunPatchBuildTask.buildApkPath=resourceApk
                 tinkerunPatchBuildTask.tinkerId=TINKER_ID
                 tinkerunPatchBuildTask.resourcesFile=variantOutput.processResources.packageOutputFile
-                tinkerunPatchBuildTask.patchApk=patchApk
+                tinkerunPatchBuildTask.configuration=configuration
                 tinkerunPatchBuildTask.dependsOn dexTask
 
                 //安装T
                 TinkerunInstallTask installTask = project.tasks.create("tinkerunInstall${variantName}", TinkerunInstallTask)
-                installTask.apk=patchApk
+                installTask.patchApk=patchApk
                 installTask.packageName=variant.applicationId
                 installTask.dependsOn  tinkerunPatchBuildTask
 

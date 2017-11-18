@@ -32,10 +32,10 @@ public class TinkerunPatchSchemaTask extends DefaultTask {
     def android
     String buildApkPath
     String outputFolder
+    def targetDir
     def signConfig
     def resourcesFile //resources.ap_
     def tinkerId
-    def patchApk
 
     public TinkerunPatchSchemaTask() {
         description = 'Assemble Tinker Patch'
@@ -54,18 +54,12 @@ public class TinkerunPatchSchemaTask extends DefaultTask {
             rename{String fileName ->
                 TinkerunPlugin.RESOURCES_FILE_NAME
             }
-            into outputFolder
+            into targetDir
         }
 
-        //FIXME
-        if(1<2) return ;
-
         //生成patch.zip
-        configuration.checkParameter()
-        configuration.buildConfig.checkParameter()
-        configuration.res.checkParameter()
-        configuration.dex.checkDexMode()
-        configuration.sevenZip.resolveZipFinalPath()
+
+        Map<String, String> configFields=['TINKER_ID':tinkerId,"NEW_TINKER_ID":tinkerId]
 
         InputParam.Builder builder = new InputParam.Builder()
         if (configuration.useSign) {
@@ -76,26 +70,25 @@ public class TinkerunPatchSchemaTask extends DefaultTask {
                     .setKeypass(signConfig.keyPassword)
                     .setStorealias(signConfig.keyAlias)
                     .setStorepass(signConfig.storePassword)
-
         }
 
         builder.setOldApk(configuration.oldApk)
                .setNewApk(buildApkPath)
                .setOutBuilder(outputFolder)
-               .setIgnoreWarning(configuration.ignoreWarning)
-               .setDexFilePattern(new ArrayList<String>(configuration.dex.pattern))
-               .setIsProtectedApp(configuration.buildConfig.isProtectedApp)
-               .setIsComponentHotplugSupported(configuration.buildConfig.supportHotplugComponent)
-               .setDexLoaderPattern(new ArrayList<String>(configuration.dex.loader))
-               .setDexIgnoreWarningLoaderPattern(new ArrayList<String>(configuration.dex.ignoreWarningLoader))
-               .setDexMode(configuration.dex.dexMode)
-               .setSoFilePattern(new ArrayList<String>(configuration.lib.pattern))
-               .setResourceFilePattern(new ArrayList<String>(configuration.res.pattern))
-               .setResourceIgnoreChangePattern(new ArrayList<String>(configuration.res.ignoreChange))
-               .setResourceLargeModSize(configuration.res.largeModSize)
-               .setUseApplyResource(configuration.buildConfig.usingResourceMapping)
-               .setConfigFields(new HashMap<String, String>(configuration.packageConfig.getFields()))
-               .setSevenZipPath(configuration.sevenZip.path)
+               .setIgnoreWarning(true)
+               .setDexFilePattern(new ArrayList<String>(configuration.pattern))
+               .setIsProtectedApp(true)
+               .setIsComponentHotplugSupported(configuration.supportHotplugComponent)
+               .setDexLoaderPattern(new ArrayList<String>(configuration.loader))
+               .setDexIgnoreWarningLoaderPattern(new ArrayList<String>())
+               .setDexMode(configuration.dexMode)
+               .setSoFilePattern(new ArrayList<String>())
+               .setResourceFilePattern(new ArrayList<String>(configuration.sourcePattern))
+               .setResourceIgnoreChangePattern(new ArrayList<String>())
+               .setResourceLargeModSize(100)
+               .setUseApplyResource(true)
+               .setConfigFields(new HashMap<String, String>(configFields))
+//               .setSevenZipPath(configuration.sevenZip.path)
                .setUseSign(configuration.useSign)
 
         InputParam inputParam = builder.create()
