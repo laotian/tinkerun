@@ -1,6 +1,7 @@
 package com.tinkerun.build
 
 import com.tinkerun.build.extension.*
+import com.tinkerun.build.task.TinkerunCopyResourcesTask
 import com.tinkerun.build.task.TinkerunDexTask
 import com.tinkerun.build.task.TinkerunInstallTask
 import com.tinkerun.build.task.TinkerunJavacTask
@@ -142,6 +143,11 @@ public class TinkerunPlugin implements Plugin<Project> {
                 dexTask.targetDir=targetDir
                 dexTask.classesDir=classesDir
 
+                //copy resources.ap_
+                TinkerunCopyResourcesTask copyResourcesTask=project.tasks.create("tinkerunCopyResource${variantName}", TinkerunCopyResourcesTask)
+                copyResourcesTask.fromFile=variantOutput.processResources.packageOutputFile
+                copyResourcesTask.toFile=project.file(targetDir+"/"+RESOURCES_FILE_NAME)
+                copyResourcesTask.dependsOn dexTask
 
                 //打包
                 def resourceApk=targetDir+"/"+RESOURCES_FILE_NAME
@@ -153,9 +159,9 @@ public class TinkerunPlugin implements Plugin<Project> {
                 tinkerunPatchBuildTask.oldApk=targetDir+"/"+BASE_APK_NAME
                 tinkerunPatchBuildTask.buildApkPath=resourceApk
                 tinkerunPatchBuildTask.tinkerId=TINKER_ID
-                tinkerunPatchBuildTask.resourcesFile=variantOutput.processResources.packageOutputFile
+//                tinkerunPatchBuildTask.resourcesFile=variantOutput.processResources.packageOutputFile
                 tinkerunPatchBuildTask.configuration=configuration
-                tinkerunPatchBuildTask.dependsOn dexTask
+                tinkerunPatchBuildTask.dependsOn copyResourcesTask
 
                 //安装
                 TinkerunInstallTask installTask = project.tasks.create("tinkerunInstall${variantName}", TinkerunInstallTask)

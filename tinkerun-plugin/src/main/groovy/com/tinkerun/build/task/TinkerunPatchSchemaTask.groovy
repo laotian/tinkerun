@@ -29,12 +29,10 @@ import org.gradle.api.tasks.TaskAction
  */
 public class TinkerunPatchSchemaTask extends DefaultTask {
     def configuration
-    def android
     String buildApkPath
     String outputFolder
     def targetDir
     def signConfig
-    def resourcesFile //resources.ap_
     def tinkerId
     def oldApk
 
@@ -42,26 +40,13 @@ public class TinkerunPatchSchemaTask extends DefaultTask {
         description = 'Assemble Tinker Patch'
         group = 'tinkerun'
         outputs.upToDateWhen { false }
-        android = project.extensions.android
     }
 
 
     @TaskAction
     def tinkerPatch() {
 
-        //复制resources.ap_
-        if(!configuration.sourceSkipped) {
-            project.copy {
-                from resourcesFile
-                rename { String fileName ->
-                    TinkerunPlugin.RESOURCES_FILE_NAME
-                }
-                into targetDir
-            }
-        }
-
         //生成patch.zip
-
         Map<String, String> configFields=['TINKER_ID':tinkerId,"NEW_TINKER_ID":tinkerId]
 
         InputParam.Builder builder = new InputParam.Builder()

@@ -8,7 +8,11 @@ import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileTree
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.JavaExec
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.bundling.Jar
@@ -32,6 +36,21 @@ public class TinkerunDexTask extends DefaultTask {
         group = 'tinkerun'
     }
 
+//    @Input
+//    public String getBaseName(){
+//        return baseName;
+//    }
+
+    @InputDirectory
+    public File getClassesDir(){
+        return project.file(classesDir)
+    }
+
+    @OutputFile
+    public File getDexFile(){
+        return project.file(targetDir+"/"+dexName)
+    }
+
     @TaskAction
     def dex() {
         def task = project.tasks.create("tinkerunZip"  +baseName.capitalize() , Jar.class, new Action<Jar>() {
@@ -44,7 +63,7 @@ public class TinkerunDexTask extends DefaultTask {
             }
         })
         task.execute()
-        project.file(classesDir).delete()
+        getClassesDir().delete()
         File jarFile=project.file(targetDir+"/"+jarName)
         doDex(jarFile,project.android.getDexOptions())
         jarFile.delete()
@@ -65,7 +84,7 @@ public class TinkerunDexTask extends DefaultTask {
                     execArgs.add("--incremental");
                     execArgs.add("--no-strict");
                 }
-                execArgs.add("--output=${project.file(targetDir).absolutePath}/${dexName}".toString())
+                execArgs.add("--output=${getDexFile().getAbsolutePath()}".toString())
                 execArgs.add(classZip.absolutePath)
                 project.logger.info(execArgs.toString())
                 javaExec.setClasspath(project.files(dexJar))
