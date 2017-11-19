@@ -41,7 +41,7 @@ public class TinkerunManifestTask extends DefaultTask {
 
     @TaskAction
     def updateManifest() {
-        project.logger.error("tinkerun want to update ${manifestPath}")
+//        project.logger.error("tinkerun want to update ${manifestPath}")
         def ns = new Namespace("http://schemas.android.com/apk/res/android", "android")
 
         def xml = new XmlParser().parse(new InputStreamReader(new FileInputStream(manifestPath), "utf-8"))

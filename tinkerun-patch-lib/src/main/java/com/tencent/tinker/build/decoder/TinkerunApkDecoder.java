@@ -22,6 +22,7 @@ import com.tencent.tinker.build.util.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
@@ -96,18 +97,23 @@ public class TinkerunApkDecoder extends BaseDecoder {
         resPatchDecoder.onAllPatchesStart();
     }
 
+
     public boolean patch(File oldFile, File newFile) throws Exception {
-        writeToLogFile(oldFile, newFile);
+//        writeToLogFile(oldFile, newFile);
         //check manifest change first
 //        manifestDecoder.patch(oldFile, newFile);
 
-        unzipApkFiles(oldFile, newFile);
+//        unzipApkFiles(oldFile, newFile);
+        //传进去的是APK
+        resPatchDecoder.patch(oldFile,newFile);
+        dexPatchDecoder.patch(null,new File(oldFile.getParentFile(),"changed_classes.dex"));
+
 
         //把changed_classes.dex复制到 新的apk解压目录
 
-        Files.copy(new File(oldFile.getParentFile(),"changed_classes.dex").toPath(),new File(mNewApkDir,"changed_classes.dex").toPath(), StandardCopyOption.REPLACE_EXISTING);
+//        Files.copy(new File(oldFile.getParentFile(),"changed_classes.dex").toPath(),new File(mNewApkDir,"changed_classes.dex").toPath(), StandardCopyOption.REPLACE_EXISTING);
 
-        Files.walkFileTree(mNewApkDir.toPath(), new ApkFilesVisitor(config, mNewApkDir.toPath(), mOldApkDir.toPath(), dexPatchDecoder, soPatchDecoder, resPatchDecoder));
+//        Files.walkFileTree(mNewApkDir.toPath(), new ApkFilesVisitor(config, mNewApkDir.toPath(), mOldApkDir.toPath(), dexPatchDecoder, soPatchDecoder, resPatchDecoder));
 
         //get all duplicate resource file
         for (File duplicateRes : resDuplicateFiles) {

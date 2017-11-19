@@ -13,9 +13,6 @@ public class TinkerunExtension {
     //开启Tinkerun
     boolean  enabled;
 
-    //开启资源
-    boolean patchResource=true
-
     //原始的R.txt
     String applyResourceMapping;
 
@@ -25,6 +22,7 @@ public class TinkerunExtension {
     String newApk
     String outputFolder
     static final boolean useSign=true
+    boolean  sourceSkipped
 
 
     /**
@@ -65,6 +63,12 @@ public class TinkerunExtension {
         pattern=["changed_classes.dex"]
         loader=[]
         sourcePattern=["res/*", "assets/*", "resources.arsc", "AndroidManifest.xml"]
+        sourceSkipped=false
+    }
+
+    def skipResource(){
+        sourceSkipped=true
+        sourcePattern=[]
     }
 
 }

@@ -47,10 +47,8 @@ public class TinkerunPlugin implements Plugin<Project> {
         project.afterEvaluate {
             TinkerunExtension configuration = project.tinkerun
             if(!configuration.enabled){
-                project.logger.error("tinkerun tasks are disabled.")
+                project.logger.warn("tinkerun tasks are disabled.")
                 return
-            }else{
-                project.logger.error("tinkerun tasks are enabled.")
             }
 
             android.applicationVariants.all { variant ->
@@ -82,8 +80,6 @@ public class TinkerunPlugin implements Plugin<Project> {
                         patchMode=true
                     }
                 }
-
-                project.logger.error("patchMode="+patchMode)
 
                 def targetDir=project.file(TINKER_INTERMEDIATES+variantDir).getAbsolutePath()
                 def basePropertyFile=project.file(targetDir+"/"+BASE_PROPERTIES)
@@ -134,33 +130,10 @@ public class TinkerunPlugin implements Plugin<Project> {
                 javacTask.classesDir=classesDir
                 javacTask.LAST_BUILD=LAST_BUILD
                 javacTask.copyFrom(variant.javaCompiler)
-                javacTask.dependsOn variantOutput.processResources
 
-
-//                //javac task
-//                JavaCompile javaCompile=variant.getJavaCompiler()
-//                JavaCompile javacTask=  project.tasks.create(name: "tinkerunJavac${variantName}",type:JavaCompile,group: "tinkerun")
-//                FileCollection originalSource=javaCompile.source
-//                File originalDestination=javaCompile.getDestinationDir()
-//                FileCollection originalClassPath=javaCompile.getClasspath()
-//
-//                def classesDir=targetDir+"/"+CLASSES
-//                project.file(classesDir).delete()
-//
-//                def androidJar= "${project.android.getSdkDirectory()}/platforms/${project.android.compileSdkVersion}/android.jar"
-//                FileCollection incrementalSource=  originalSource.filter {
-//                    it.lastModified()>Long.valueOf(LAST_BUILD)
-//                }
-//                javacTask.setSource(incrementalSource)
-//                javacTask.setDestinationDir(project.file(classesDir))
-//                javacTask.setClasspath(originalClassPath+project.files(originalDestination)+project.files(androidJar))
-//                javacTask.options.compilerArgs=javaCompile.options.compilerArgs
-//                javacTask.options.sourcepath=javaCompile.options.sourcepath
-//                javacTask.options.debug=javaCompile.options.debug
-//                javacTask.targetCompatibility=javaCompile.targetCompatibility
-//                javacTask.sourceCompatibility=javaCompile.sourceCompatibility
-//                javacTask.options.bootClasspath=javaCompile.options.bootClasspath
-//                javacTask.dependsOn variantOutput.processResources
+                if(!configuration.sourceSkipped){
+                    javacTask.dependsOn variantOutput.processResources
+                }
 
                 //dex
                 TinkerunDexTask dexTask = project.tasks.create("tinkerunDex${variantName}", TinkerunDexTask)

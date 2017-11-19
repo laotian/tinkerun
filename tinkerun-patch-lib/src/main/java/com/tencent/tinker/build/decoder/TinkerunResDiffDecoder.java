@@ -21,9 +21,11 @@ import com.tencent.tinker.build.apkparser.AndroidParser;
 import com.tencent.tinker.build.info.InfoWriter;
 import com.tencent.tinker.build.patch.Configuration;
 import com.tencent.tinker.build.util.*;
+import com.tinkerun.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,7 +40,7 @@ import java.util.zip.ZipFile;
 /**
  * Created by zhangshaowen on 16/8/8.
  */
-public class TinkerunResDiffDecoder extends BaseDecoder {
+public class TinkerunResDiffDecoder extends BaseDecoder implements FileUtils.ZipEntryVisitor {
     private static final String TEST_RESOURCE_NAME        = "only_use_to_test_tinker_resource.txt";
     private static final String TEST_RESOURCE_ASSETS_PATH = "assets/" + TEST_RESOURCE_NAME;
 
@@ -84,65 +86,71 @@ public class TinkerunResDiffDecoder extends BaseDecoder {
 
     @Override
     public boolean patch(File oldFile, File newFile) throws Exception {
-        String name = getRelativePathStringToNewFile(newFile);
-
-//        Logger.e("res, patch,oldFile="+oldFile.getAbsolutePath()+",newFile="+newFile.getAbsolutePath());
-        //actually, it won't go below
-        if (newFile == null || !newFile.exists()) {
-            String relativeStringByOldDir = getRelativePathStringToOldFile(oldFile);
-            if (Utils.checkFileInPattern(config.mResIgnoreChangePattern, relativeStringByOldDir)) {
-                Logger.e("found delete resource: " + relativeStringByOldDir + " ,but it match ignore change pattern, just ignore!");
-                return false;
-            }
-            deletedSet.add(relativeStringByOldDir);
-            writeResLog(newFile, oldFile, TypedValue.DEL);
-            return true;
+        if(config.mResFilePattern.size()>0) {
+            FileUtils.walkResource(oldFile, newFile, config.mResFilePattern, this);
         }
-
-        File outputFile = getOutputPath(newFile).toFile();
-
-        if (oldFile == null || !oldFile.exists()) {
-            if (Utils.checkFileInPattern(config.mResIgnoreChangePattern, name)) {
-                Logger.e("found add resource: " + name + " ,but it match ignore change pattern, just ignore!");
-                return false;
-            }
-            FileOperation.copyFileUsingStream(newFile, outputFile);
-            addedSet.add(name);
-            writeResLog(newFile, oldFile, TypedValue.ADD);
-            return true;
-        }
-        //both file length is 0
-        if (oldFile.length() == 0 && newFile.length() == 0) {
-            return false;
-        }
-
-        //如果一样小文件，检查是否为同一文件
-        //FIXME 这里需要优化，根据资源文件的修改时间来决定是否比较
-        if(newFile.length()==oldFile.length()) {
-            //new add file
-            String newMd5 = MD5.getMD5(newFile);
-            String oldMd5 = MD5.getMD5(oldFile);
-
-            //oldFile or newFile may be 0b length
-            if (oldMd5 != null && oldMd5.equals(newMd5)) {
-                return false;
-            }
-            if (Utils.checkFileInPattern(config.mResIgnoreChangePattern, name)) {
-                Logger.d("found modify resource: " + name + ", but it match ignore change pattern, just ignore!");
-                return false;
-            }
-            if (name.equals(TypedValue.RES_MANIFEST)) {
-                Logger.d("found modify resource: " + name + ", but it is AndroidManifest.xml, just ignore!");
-                return false;
-            }
-//            if (name.equals(TypedValue.RES_ARSC)) {
-//                if (AndroidParser.resourceTableLogicalChange(config)) {
-//                    Logger.d("found modify resource: " + name + ", but it is logically the same as original new resources.arsc, just ignore!");
-//                    return false;
-//                }
+        //
+//
+//        String name = getRelativePathStringToNewFile(newFile);
+//
+////        Logger.e("res, patch,oldFile="+oldFile.getAbsolutePath()+",newFile="+newFile.getAbsolutePath());
+//        //actually, it won't go below
+//        if (newFile == null || !newFile.exists()) {
+//            String relativeStringByOldDir = getRelativePathStringToOldFile(oldFile);
+//            if (Utils.checkFileInPattern(config.mResIgnoreChangePattern, relativeStringByOldDir)) {
+//                Logger.e("found delete resource: " + relativeStringByOldDir + " ,but it match ignore change pattern, just ignore!");
+//                return false;
 //            }
-        }
-        dealWithModifyFile(name, oldFile, newFile, outputFile);
+//            deletedSet.add(relativeStringByOldDir);
+//            writeResLog(newFile, oldFile, TypedValue.DEL);
+//            return true;
+//        }
+//
+//        File outputFile = getOutputPath(newFile).toFile();
+//
+//        if (oldFile == null || !oldFile.exists()) {
+//            if (Utils.checkFileInPattern(config.mResIgnoreChangePattern, name)) {
+//                Logger.e("found add resource: " + name + " ,but it match ignore change pattern, just ignore!");
+//                return false;
+//            }
+//
+//            FileOperation.copyFileUsingStream(newFile, outputFile);
+//            addedSet.add(name);
+//            writeResLog(newFile, oldFile, TypedValue.ADD);
+//            return true;
+//        }
+//        //both file length is 0
+//        if (oldFile.length() == 0 && newFile.length() == 0) {
+//            return false;
+//        }
+//
+//        //如果一样小文件，检查是否为同一文件
+//        //FIXME 这里需要优化，根据资源文件的修改时间来决定是否比较
+//        if(newFile.length()==oldFile.length()) {
+//            //new add file
+//            String newMd5 = MD5.getMD5(newFile);
+//            String oldMd5 = MD5.getMD5(oldFile);
+//
+//            //oldFile or newFile may be 0b length
+//            if (oldMd5 != null && oldMd5.equals(newMd5)) {
+//                return false;
+//            }
+//            if (Utils.checkFileInPattern(config.mResIgnoreChangePattern, name)) {
+//                Logger.d("found modify resource: " + name + ", but it match ignore change pattern, just ignore!");
+//                return false;
+//            }
+//            if (name.equals(TypedValue.RES_MANIFEST)) {
+//                Logger.d("found modify resource: " + name + ", but it is AndroidManifest.xml, just ignore!");
+//                return false;
+//            }
+////            if (name.equals(TypedValue.RES_ARSC)) {
+////                if (AndroidParser.resourceTableLogicalChange(config)) {
+////                    Logger.d("found modify resource: " + name + ", but it is logically the same as original new resources.arsc, just ignore!");
+////                    return false;
+////                }
+////            }
+//        }
+//        dealWithModifyFile(name, oldFile, newFile, outputFile);
         return true;
     }
 
@@ -153,6 +161,26 @@ public class TinkerunResDiffDecoder extends BaseDecoder {
         return false;
     }
 
+    private void writeResLog(String newFile, String oldFile, int mode){
+        if (logWriter != null) {
+            String log = "";
+            switch (mode) {
+                case TypedValue.ADD:
+                    Logger.d("Found add resource: " + newFile);
+                    log = "add resource: " +newFile;
+                    break;
+                case TypedValue.MOD:
+                    Logger.d("Found modify resource: " + newFile);
+                    log = "modify resource: " +newFile;
+                    break;
+                case TypedValue.DEL:
+                    Logger.d("Found deleted resource: " + oldFile);
+                    log = "deleted resource: " + oldFile;
+                    break;
+            }
+            logWriter.writeLineToInfoFile(log);
+        }
+    }
 
     private void writeResLog(File newFile, File oldFile, int mode) throws IOException {
         if (logWriter != null) {
@@ -392,6 +420,26 @@ public class TinkerunResDiffDecoder extends BaseDecoder {
         DeletedResVisitor deletedResVisitor = new DeletedResVisitor(config, newApkDir.toPath(), oldApkDir.toPath());
         Files.walkFileTree(oldApkDir.toPath(), deletedResVisitor);
         return deletedResVisitor.deletedFiles;
+    }
+
+    @Override
+    public void onVisit(FileUtils.ZipEntryDiff zipEntryDiff, String entryName, InputStream entryStream) {
+        switch (zipEntryDiff){
+            case ADD:
+                FileUtils.saveStream(entryStream,config.mTempResultDir.getAbsolutePath(),entryName);
+                addedSet.add(entryName);
+                writeResLog(entryName,null,TypedValue.ADD);
+                break;
+            case MODIFY:
+                FileUtils.saveStream(entryStream,config.mTempResultDir.getAbsolutePath(),entryName);
+                modifiedSet.add(entryName);
+                writeResLog(entryName,entryName,TypedValue.MOD);
+                break;
+            case DELETE:
+                deletedSet.add(entryName);
+                writeResLog(null,entryName,TypedValue.DEL);
+                break;
+        }
     }
 
     public class LargeModeInfo {

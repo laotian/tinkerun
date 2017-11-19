@@ -110,67 +110,73 @@ public class TinkerunDexDiffDecoder extends BaseDecoder {
     @SuppressWarnings("NewApi")
     @Override
     public boolean patch(final File oldFile, final File newFile) throws Exception {
-        final String dexName = getRelativeDexName(oldFile, newFile);
 
-        // first of all, we should check input files if excluded classes were modified.
-        Logger.d("Check for loader classes in dex: %s", dexName);
+        //保存 changed_classes.dex
+        final File dest = new File(config.mTempResultDir + "/" + CHANGED_CLASSES_DEX_NAME);
+        FileOperation.copyFileUsingStream(newFile,dest);
 
-        try {
-            excludedClassModifiedChecker.checkIfExcludedClassWasModifiedInNewDex(oldFile, newFile);
-        } catch (IOException e) {
-            throw new TinkerPatchException(e);
-        } catch (TinkerPatchException e) {
-            if (config.mIgnoreWarning) {
-                Logger.e("Warning:ignoreWarning is true, but we found %s", e.getMessage());
-            } else {
-                Logger.e("Warning:ignoreWarning is false, but we found %s", e.getMessage());
-                throw e;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
-        // If corresponding new dex was completely deleted, just return false.
-        // don't process 0 length dex
-        if (newFile == null || !newFile.exists() || newFile.length() == 0) {
-            return false;
-        }
+//        final String dexName = getRelativeDexName(oldFile, newFile);
+//
+//        // first of all, we should check input files if excluded classes were modified.
+//        Logger.d("Check for loader classes in dex: %s", dexName);
+//
+//        try {
+//            excludedClassModifiedChecker.checkIfExcludedClassWasModifiedInNewDex(oldFile, newFile);
+//        } catch (IOException e) {
+//            throw new TinkerPatchException(e);
+//        } catch (TinkerPatchException e) {
+//            if (config.mIgnoreWarning) {
+//                Logger.e("Warning:ignoreWarning is true, but we found %s", e.getMessage());
+//            } else {
+//                Logger.e("Warning:ignoreWarning is false, but we found %s", e.getMessage());
+//                throw e;
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
-        File dexDiffOut = getOutputPath(newFile).toFile();
+//        // If corresponding new dex was completely deleted, just return false.
+//        // don't process 0 length dex
+//        if (newFile == null || !newFile.exists() || newFile.length() == 0) {
+//            return false;
+//        }
+//
+//        File dexDiffOut = getOutputPath(newFile).toFile();
+//
+//        final String newMd5 = getRawOrWrappedDexMD5(newFile);
+//
+//        //new add file
+//        if (oldFile == null || !oldFile.exists() || oldFile.length() == 0) {
+//            hasDexChanged = true;
+//            copyNewDexAndLogToDexMeta(newFile, newMd5, dexDiffOut);
+//            return true;
+//        }
 
-        final String newMd5 = getRawOrWrappedDexMD5(newFile);
-
-        //new add file
-        if (oldFile == null || !oldFile.exists() || oldFile.length() == 0) {
-            hasDexChanged = true;
-            copyNewDexAndLogToDexMeta(newFile, newMd5, dexDiffOut);
-            return true;
-        }
-
-        final String oldMd5 = getRawOrWrappedDexMD5(oldFile);
-
-        if ((oldMd5 != null && !oldMd5.equals(newMd5)) || (oldMd5 == null && newMd5 != null)) {
-            hasDexChanged = true;
-            if (oldMd5 != null) {
-                collectAddedOrDeletedClasses(oldFile, newFile);
-            }
-        }
-
-        RelatedInfo relatedInfo = new RelatedInfo();
-        relatedInfo.oldMd5 = oldMd5;
-        relatedInfo.newMd5 = newMd5;
-
-        // collect current old dex file and corresponding new dex file for further processing.
-        oldAndNewDexFilePairList.add(new AbstractMap.SimpleEntry<>(oldFile, newFile));
-
-        dexNameToRelatedInfoMap.put(dexName, relatedInfo);
+//        final String oldMd5 = getRawOrWrappedDexMD5(oldFile);
+//
+//        if ((oldMd5 != null && !oldMd5.equals(newMd5)) || (oldMd5 == null && newMd5 != null)) {
+//            hasDexChanged = true;
+//            if (oldMd5 != null) {
+//                collectAddedOrDeletedClasses(oldFile, newFile);
+//            }
+//        }
+//
+//        RelatedInfo relatedInfo = new RelatedInfo();
+//        relatedInfo.oldMd5 = oldMd5;
+//        relatedInfo.newMd5 = newMd5;
+//
+//        // collect current old dex file and corresponding new dex file for further processing.
+//        oldAndNewDexFilePairList.add(new AbstractMap.SimpleEntry<>(oldFile, newFile));
+//
+//        dexNameToRelatedInfoMap.put(dexName, relatedInfo);
 
         return true;
     }
 
     @Override
     public void onAllPatchesEnd() throws Exception {
-//        generateChangedClassesDexFile();
+        generateChangedClassesDexFile();
         addTestDex();
     }
 
