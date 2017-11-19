@@ -29,6 +29,19 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    productFlavors {
+        //正常包
+
+        normal {
+            applicationId "com.tinkerun.app"
+        }
+        //销售人员演示包
+        sales {
+            applicationId "com.tinkerun.appsales"
+        }
+    }
+
 }
 //tinkerun{
 //    enabled false

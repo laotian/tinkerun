@@ -3,6 +3,7 @@ package com.tinkerun.build
 import com.tinkerun.build.extension.*
 import com.tinkerun.build.task.TinkerunDexTask
 import com.tinkerun.build.task.TinkerunInstallTask
+import com.tinkerun.build.task.TinkerunJavacTask
 import com.tinkerun.build.task.TinkerunManifestTask
 import com.tinkerun.build.task.TinkerunPatchSchemaTask
 import com.tinkerun.build.task.TinkerunResourceIdTask
@@ -30,14 +31,10 @@ public class TinkerunPlugin implements Plugin<Project> {
     public static final String R_TXT="R.txt"
     public static final String BASE_PROPERTIES_TINKER_ID="tinker_id";
     public static final String BASE_PROPERTIES_LAST_BUILD="last_build";
+    public static final String CLASSES="classes"
+    public static final String jarName="changed_classes.jar"
+    public static final String dexName="changed_classes.dex"
 
-    static String getTargetDir(String variantName){
-        return TINKER_INTERMEDIATES+variantName+"/"
-    }
-
-    static String getRTxt(String variantName){
-        return getTargetDir(variantName)+R_TXT
-    }
 
     @Override
     public void apply(Project project) {
@@ -59,9 +56,9 @@ public class TinkerunPlugin implements Plugin<Project> {
             android.applicationVariants.all { variant ->
 
                 def variantOutput = variant.outputs.first()
-                def variantName = variant.name.capitalize()
+                String variantName = variant.name.capitalize()
                 def variantData = variant.variantData
-                def variantDirName=  variant.getDirName()
+                String variantDir=  variant.getDirName()
 
                 //如果不能调试，比如Release模式，不启用Tinkerun
                 if(!variant.getBuildType().buildType.isDebuggable()){
@@ -88,8 +85,8 @@ public class TinkerunPlugin implements Plugin<Project> {
 
                 project.logger.error("patchMode="+patchMode)
 
-                def targetDir=project.file(getTargetDir(variantName)).getAbsolutePath()
-                def basePropertyFile=project.file(getTargetDir(variantName)+BASE_PROPERTIES)
+                def targetDir=project.file(TINKER_INTERMEDIATES+variantDir).getAbsolutePath()
+                def basePropertyFile=project.file(targetDir+"/"+BASE_PROPERTIES)
                 // Add this proguard settings file to the list
                 def TINKER_ID="TINKERUN_"+date()
                 def LAST_BUILD=date()
@@ -112,45 +109,12 @@ public class TinkerunPlugin implements Plugin<Project> {
                 }
                 manifestTask.tinkerId=TINKER_ID
                 manifestTask.mustRunAfter variantOutput.processManifest
-
                 variantOutput.processResources.dependsOn manifestTask
-
-                if(!patchMode){
-                    project.logger.error("patchMode ,assemble add work to do..")
-                    variantOutput.assemble.doLast {
-
-                        project.copy {
-                            from "${project.buildDir}/intermediates/symbols/${variantDirName}/R.txt"
-                            into   targetDir
-                        }
-
-                        project.copy{
-                            from variant.outputs.outputFile
-                            rename { String fileName ->
-                              BASE_APK_NAME
-                            }
-                            into targetDir
-                        }
-
-                        //清理
-                        project.file(targetDir+"/output/").deleteDir()
-
-                        //保存TINKER_ID与最后生成时间
-                        Properties properties = new Properties()
-                        properties.setProperty(BASE_PROPERTIES_TINKER_ID,TINKER_ID)
-                        properties.setProperty(BASE_PROPERTIES_LAST_BUILD,date())
-                        properties.store(basePropertyFile.newWriter(),"Tinkerun base build snapshot")
-
-                        project.logger.error("已经保存基础包信息")
-                    }
-                }
-
-//                configuration.oldApk=targetDir+"/"+BASE_APK_NAME
 
                 //resource id
                 TinkerunResourceIdTask applyResourceTask = project.tasks.create("tinkerunProcess${variantName}ResourceId", TinkerunResourceIdTask)
                 applyResourceTask.cleanMode=!patchMode
-                applyResourceTask.rTxtFile=getRTxt(variantName)
+                applyResourceTask.rTxtFile=targetDir+"/"+R_TXT
                 if (variantOutput.processResources.properties['resDir'] != null) {
                     applyResourceTask.resDir = variantOutput.processResources.resDir
                 } else if (variantOutput.processResources.properties['inputResourcesDir'] != null) {
@@ -164,61 +128,51 @@ public class TinkerunPlugin implements Plugin<Project> {
                     throw new RuntimeException("manifestTask.manifestPath or applyResourceTask.resDir is null.")
                 }
 
-                def applicationId=variant.applicationId
-
-                JavaCompile javaCompile=variant.getJavaCompiler()
-                JavaCompile javacTask=  project.tasks.create(name: "tinkerunJavac${variantName}",type:JavaCompile,group: "tinkerun")
-                FileCollection originalSource=javaCompile.source
-                File originalDestination=javaCompile.getDestinationDir()
-                FileCollection originalClassPath=javaCompile.getClasspath()
-//                project.logger.error(" originalClassPath,file size=="+originalClassPath.files.size())
-//                originalClassPath.files.each {File file->
-//                    project.logger.error(" originalClassPathfile="+file)
-//                }
-//
-//                project.logger.error("getDestinationDir="+javaCompile.getDestinationDir())
-
-                def classesDir=targetDir+"/classes/"
-                project.file(classesDir).delete()
-
-                def androidJar= "${project.android.getSdkDirectory()}/platforms/${project.android.compileSdkVersion}/android.jar"
-                project.logger.error("androidJar="+androidJar)
-                FileCollection incrementalSource=  originalSource.filter {
-                    it.lastModified()>Long.valueOf(LAST_BUILD)
-                }
-                javacTask.setSource(incrementalSource)
-                javacTask.setDestinationDir(project.file(classesDir))
-                javacTask.setClasspath(originalClassPath+project.files(originalDestination)+project.files(androidJar))
-                javacTask.options.compilerArgs=javaCompile.options.compilerArgs
-                javacTask.options.sourcepath=javaCompile.options.sourcepath
-                javacTask.options.debug=javaCompile.options.debug
-                javacTask.targetCompatibility=javaCompile.targetCompatibility
-                javacTask.sourceCompatibility=javaCompile.sourceCompatibility
-                javacTask.options.bootClasspath=javaCompile.options.bootClasspath
-//                javacTask.targetCompatibility=javaCompile.targetCompatibility
-
-//                task compileOne (type: JavaCompile) {
-//                    source = sourceSets.main.java.srcDirs
-//                    include 'some/pkg/ClassTwo.java'
-//                    classpath = sourceSets.main.compileClasspath
-//                    destinationDir = sourceSets.main.output.classesDir
-//                }
-//
-//                compileOne.options.compilerArgs = ["-sourcepath", "$projectDir/src/main/java"]
+                //javac task
+                def classesDir=targetDir+"/"+CLASSES
+                TinkerunJavacTask javacTask = project.tasks.create("tinkerunJavac${variantName}", TinkerunJavacTask)
+                javacTask.classesDir=classesDir
+                javacTask.LAST_BUILD=LAST_BUILD
+                javacTask.copyFrom(variant.javaCompiler)
                 javacTask.dependsOn variantOutput.processResources
 
-                //javac 与 dex
-                TinkerunDexTask dexTask = project.tasks.create("tinkerun${variantName}Dex", TinkerunDexTask)
-                dexTask.dependsOn  javacTask
-                dexTask.javaCompile= variant.getJavaCompiler()
-                dexTask.lastBuildTime=Long.valueOf(LAST_BUILD)
-                dexTask.applicationVariant=variant
-                dexTask.targetDir=getTargetDir(variantName)
 
+//                //javac task
+//                JavaCompile javaCompile=variant.getJavaCompiler()
+//                JavaCompile javacTask=  project.tasks.create(name: "tinkerunJavac${variantName}",type:JavaCompile,group: "tinkerun")
+//                FileCollection originalSource=javaCompile.source
+//                File originalDestination=javaCompile.getDestinationDir()
+//                FileCollection originalClassPath=javaCompile.getClasspath()
+//
+//                def classesDir=targetDir+"/"+CLASSES
+//                project.file(classesDir).delete()
+//
+//                def androidJar= "${project.android.getSdkDirectory()}/platforms/${project.android.compileSdkVersion}/android.jar"
+//                FileCollection incrementalSource=  originalSource.filter {
+//                    it.lastModified()>Long.valueOf(LAST_BUILD)
+//                }
+//                javacTask.setSource(incrementalSource)
+//                javacTask.setDestinationDir(project.file(classesDir))
+//                javacTask.setClasspath(originalClassPath+project.files(originalDestination)+project.files(androidJar))
+//                javacTask.options.compilerArgs=javaCompile.options.compilerArgs
+//                javacTask.options.sourcepath=javaCompile.options.sourcepath
+//                javacTask.options.debug=javaCompile.options.debug
+//                javacTask.targetCompatibility=javaCompile.targetCompatibility
+//                javacTask.sourceCompatibility=javaCompile.sourceCompatibility
+//                javacTask.options.bootClasspath=javaCompile.options.bootClasspath
+//                javacTask.dependsOn variantOutput.processResources
+
+                //dex
+                TinkerunDexTask dexTask = project.tasks.create("tinkerunDex${variantName}", TinkerunDexTask)
+                dexTask.dependsOn  javacTask
+                dexTask.baseName=variant.baseName
+                dexTask.targetDir=targetDir
+                dexTask.classesDir=classesDir
+
+
+                //打包
                 def resourceApk=targetDir+"/"+RESOURCES_FILE_NAME
                 def outputDir=targetDir+"/output/"
-                def patchApk=outputDir+PATCH_APK_NAME
-                //打包
                 TinkerunPatchSchemaTask tinkerunPatchBuildTask = project.tasks.create("tinkerunPatch${variantName}", TinkerunPatchSchemaTask)
                 tinkerunPatchBuildTask.signConfig = variantData.variantConfiguration.signingConfig
                 tinkerunPatchBuildTask.outputFolder=outputDir
@@ -230,11 +184,39 @@ public class TinkerunPlugin implements Plugin<Project> {
                 tinkerunPatchBuildTask.configuration=configuration
                 tinkerunPatchBuildTask.dependsOn dexTask
 
-                //安装T
+                //安装
                 TinkerunInstallTask installTask = project.tasks.create("tinkerunInstall${variantName}", TinkerunInstallTask)
-                installTask.patchApk=patchApk
+                installTask.patchApk=outputDir+PATCH_APK_NAME
                 installTask.packageName=variant.applicationId
                 installTask.dependsOn  tinkerunPatchBuildTask
+
+
+                //基础包模式下，保存基础包信息
+                if(!patchMode){
+                    variantOutput.assemble.doLast {
+                        //清理
+                        project.file(targetDir).deleteDir()
+                        //复制R.txt
+                        project.copy {
+                            from "${project.buildDir}/intermediates/symbols/${variantDir}/R.txt"
+                            into   targetDir
+                        }
+                        //复制APK
+                        project.copy{
+                            from variant.outputs.outputFile
+                            rename { String fileName ->
+                                BASE_APK_NAME
+                            }
+                            into targetDir
+                        }
+                        //保存TINKER_ID与最后生成时间
+                        Properties properties = new Properties()
+                        properties.setProperty(BASE_PROPERTIES_TINKER_ID,TINKER_ID)
+                        properties.setProperty(BASE_PROPERTIES_LAST_BUILD,date())
+                        properties.store(basePropertyFile.newWriter(),"Tinkerun base build snapshot")
+                        project.logger.debug("Tinkerun已经保存基础包信息,Come on baby")
+                    }
+                }
 
 
 
@@ -269,15 +251,15 @@ public class TinkerunPlugin implements Plugin<Project> {
         return project.tasks.findByName(collectMultiDexComponents)
     }
 
-    Task getPackageTask(Project project,String variantName){
-        String packageTaskName = "package${variantName}"
-        return project.tasks.findByName(packageTaskName)
-    }
+//    Task getPackageTask(Project project,String variantName){
+//        String packageTaskName = "package${variantName}"
+//        return project.tasks.findByName(packageTaskName)
+//    }
 
-    Task getAssembleTask(Project project,String variantName){
-        String assemble = "assemble${variantName}"
-        return project.tasks.findByName(assemble)
-    }
+//    Task getAssembleTask(Project project,String variantName){
+//        String assemble = "assemble${variantName}"
+//        return project.tasks.findByName(assemble)
+//    }
 
      static String date() {
          return System.currentTimeMillis()+""

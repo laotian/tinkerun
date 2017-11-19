@@ -50,6 +50,7 @@ public class TinkerunPatchSchemaTask extends DefaultTask {
     def tinkerPatch() {
 
         //复制resources.ap_
+        //FIXME 这里不用复制，但tinker生成补丁时会检查
         project.copy {
             from resourcesFile
             rename{String fileName ->
