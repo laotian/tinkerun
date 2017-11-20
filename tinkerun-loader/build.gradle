@@ -14,10 +14,10 @@ android {
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"
-        /**
-         * you can use multiDex and install it in your ApplicationLifeCycle implement
-         */
-        multiDexEnabled true
+//        /**
+//         * you can use multiDex and install it in your ApplicationLifeCycle implement
+//         */
+//        multiDexEnabled true
     }
 
     buildTypes {
@@ -36,7 +36,7 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    compile "com.android.support:multidex:1.0.1"
+//    compile "com.android.support:multidex:1.0.1"
     compile("com.tencent.tinker:tinker-android-lib:${TINKER_VERSION}") { changing = true }
     compile("com.tencent.tinker:tinker-android-loader:${TINKER_VERSION}") { changing = true }
     compile("com.tencent.tinker:aosp-dexutils:${TINKER_VERSION}") { changing = true }

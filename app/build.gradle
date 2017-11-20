@@ -22,6 +22,8 @@ android {
         versionName "1.0"
 //        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         buildConfigField "String", "PLATFORM", "\"all\""
+        multiDexEnabled true
+//        multiDexKeepProguard file("tinker_multidexkeep.pro")
     }
     buildTypes {
         release {
@@ -52,11 +54,14 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
     compile project(':tinkerun-loader')
+    compile 'com.android.support:multidex:1.0.1'
 }
 
 project.afterEvaluate {
 
     android.applicationVariants.all { variant ->
+
+//      println
 
         def variantOutput = variant.outputs.first()
         def variantName = variant.name.capitalize()

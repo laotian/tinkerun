@@ -6,6 +6,7 @@ import com.tinkerun.build.task.TinkerunDexTask
 import com.tinkerun.build.task.TinkerunInstallTask
 import com.tinkerun.build.task.TinkerunJavacTask
 import com.tinkerun.build.task.TinkerunManifestTask
+import com.tinkerun.build.task.TinkerunMultidexConfigTask
 import com.tinkerun.build.task.TinkerunPatchSchemaTask
 import com.tinkerun.build.task.TinkerunResourceIdTask
 import org.gradle.api.GradleException
@@ -125,6 +126,32 @@ public class TinkerunPlugin implements Plugin<Project> {
                     throw new RuntimeException("manifestTask.manifestPath or applyResourceTask.resDir is null.")
                 }
 
+
+
+
+                // Add this multidex proguard settings file to the list
+                boolean multiDexEnabled = variantData.variantConfiguration.isMultiDexEnabled()
+
+                if (multiDexEnabled) {
+                    TinkerunMultidexConfigTask multidexConfigTask = project.tasks.create("tinkerunProcess${variantName}MultidexKeep", TinkerunMultidexConfigTask)
+                    multidexConfigTask.applicationVariant = variant
+                    multidexConfigTask.mustRunAfter manifestTask
+
+                    // for java.io.FileNotFoundException: app/build/intermediates/multi-dex/release/manifest_keep.txt
+                    // for gradle 3.x gen manifest_keep move to processResources task
+                    multidexConfigTask.mustRunAfter variantOutput.processResources
+
+                    def multidexTask = getMultiDexTask(project, variantName)
+                    if (multidexTask != null) {
+                        multidexTask.dependsOn multidexConfigTask
+                    }
+                    def collectMultiDexComponentsTask = getCollectMultiDexComponentsTask(project, variantName)
+                    if (collectMultiDexComponentsTask != null) {
+                        multidexConfigTask.mustRunAfter collectMultiDexComponentsTask
+                    }
+                }
+
+
                 //javac task
                 def classesDir=targetDir+"/"+CLASSES
                 TinkerunJavacTask javacTask = project.tasks.create("tinkerunJavac${variantName}", TinkerunJavacTask)
@@ -228,6 +255,11 @@ public class TinkerunPlugin implements Plugin<Project> {
     Task getCollectMultiDexComponentsTask(Project project, String variantName) {
         String collectMultiDexComponents = "collect${variantName}MultiDexComponents"
         return project.tasks.findByName(collectMultiDexComponents)
+    }
+
+    Task getMultiDexTask(Project project, String variantName) {
+        String multiDexTaskName = "transformClassesWithMultidexlistFor${variantName}"
+        return project.tasks.findByName(multiDexTaskName)
     }
 
 //    Task getPackageTask(Project project,String variantName){

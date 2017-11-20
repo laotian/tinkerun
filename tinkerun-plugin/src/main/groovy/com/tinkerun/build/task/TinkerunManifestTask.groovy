@@ -52,6 +52,7 @@ public class TinkerunManifestTask extends DefaultTask {
             application.attributes()[ns.name]=TINKERUN_APPLICATION
             updateMeta(application,ns,TINKER_ID,tinkerId)
             updateMeta(application,ns,TINKERUN_APP,applicationName)
+            addApplicationToLoaderPattern(applicationName)
         }
         // Write the manifest file
         def printer = new XmlNodePrinter(new PrintWriter(manifestPath, "utf-8"))
@@ -72,18 +73,22 @@ public class TinkerunManifestTask extends DefaultTask {
         }
     }
 
-    void addApplicationToLoaderPattern() {
-        Iterable<String> loader = project.extensions.tinkerPatch.dex.loader
-        String applicationName = readManifestApplicationName(manifestPath)
+    void addApplicationToLoaderPattern(String applicationName) {
+
+        if(applicationName==null || applicationName.length()==0){
+            return;
+        }
+
+        Iterable<String> loader = project.extensions.tinkerun.loader
 
         if (applicationName != null && !loader.contains(applicationName)) {
             loader.add(applicationName)
-            project.logger.error("tinker add ${applicationName} to dex loader pattern")
+            project.logger.debug("tinkerun add ${applicationName} to dex loader pattern")
         }
         String loaderClass = "com.tencent.tinker.loader.*"
         if (!loader.contains(loaderClass)) {
             loader.add(loaderClass)
-            project.logger.error("tinker add ${loaderClass} to dex loader pattern")
+            project.logger.debug("tinkerun add ${loaderClass} to dex loader pattern")
         }
 
     }
