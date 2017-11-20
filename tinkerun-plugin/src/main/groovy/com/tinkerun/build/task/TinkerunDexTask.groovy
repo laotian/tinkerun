@@ -19,6 +19,8 @@ import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.bundling.Zip
 import org.gradle.api.tasks.compile.JavaCompile
 
+import java.util.regex.Pattern
+
 /**
  *
  *TinkerunPatch
@@ -55,9 +57,15 @@ public class TinkerunDexTask extends DefaultTask {
     def dex() {
         def task = project.tasks.create("tinkerunZip"  +baseName.capitalize() , Jar.class, new Action<Jar>() {
 
+            //FIXME 暂时以名称排除，应以是否为apt生成的R.java来判断
+            final Pattern pattern=Pattern.compile('^R\\$[a-z]+\\.class$')
+
             @Override
             void execute(Jar zip) {
                 zip.from(classesDir)
+                zip.exclude {
+                   it.name=="R.class" || pattern.matcher(it.name).matches()
+                }
                 zip.setDestinationDir(project.file(targetDir))
                 zip.setArchiveName(jarName)
             }
