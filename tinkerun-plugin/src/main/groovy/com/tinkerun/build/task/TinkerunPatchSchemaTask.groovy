@@ -47,7 +47,9 @@ public class TinkerunPatchSchemaTask extends DefaultTask {
     def tinkerPatch() {
 
         //生成patch.zip
-        Map<String, String> configFields=['TINKER_ID':tinkerId,"NEW_TINKER_ID":tinkerId]
+        Map<String, String> configFields=new HashMap<>(project.tinkerun.getFields())
+        configFields.put("TINKER_ID",tinkerId)
+        configFields.put("NEW_TINKER_ID",tinkerId)
 
         InputParam.Builder builder = new InputParam.Builder()
         if (configuration.useSign) {
@@ -75,7 +77,7 @@ public class TinkerunPatchSchemaTask extends DefaultTask {
                .setResourceIgnoreChangePattern(new ArrayList<String>())
                .setResourceLargeModSize(100)
                .setUseApplyResource(true)
-               .setConfigFields(new HashMap<String, String>(configFields))
+               .setConfigFields(configFields)
 //               .setSevenZipPath(configuration.sevenZip.path)
                .setUseSign(configuration.useSign)
 

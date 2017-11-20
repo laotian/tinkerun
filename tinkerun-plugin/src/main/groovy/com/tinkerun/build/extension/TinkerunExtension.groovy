@@ -57,6 +57,8 @@ public class TinkerunExtension {
 
     Iterable<String> sourcePattern
 
+    private Map<String, String> fields
+
     public TinkerunExtension() {
         this.enabled=true;
         dexMode="jar"
@@ -64,11 +66,20 @@ public class TinkerunExtension {
         loader=[]
         sourcePattern=["res/*", "assets/*", "resources.arsc", "AndroidManifest.xml"]
         sourceSkipped=false
+        fields = [:]
     }
 
     def skipResource(){
         sourceSkipped=true
         sourcePattern=[]
+    }
+
+    Map<String, String> getFields() {
+        return fields
+    }
+
+    void configField(String name, String value) {
+        fields.put(name, value)
     }
 
 }

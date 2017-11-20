@@ -45,9 +45,11 @@ android {
     }
 
 }
-//tinkerun{
+tinkerun{
 //    enabled false
-//}
+    configField("config1","value1")
+    configField("config2","haha")
+}
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
