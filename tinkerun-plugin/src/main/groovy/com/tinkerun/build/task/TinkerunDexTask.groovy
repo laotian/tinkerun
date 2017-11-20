@@ -58,6 +58,7 @@ public class TinkerunDexTask extends DefaultTask {
         def task = project.tasks.create("tinkerunZip"  +baseName.capitalize() , Jar.class, new Action<Jar>() {
 
             //FIXME 暂时以名称排除，应以是否为apt生成的R.java来判断
+            //并且这可能会生成没有类的jar，导致dex失败
             final Pattern pattern=Pattern.compile('^R\\$[a-z]+\\.class$')
 
             @Override
