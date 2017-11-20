@@ -46,6 +46,17 @@ public class TinkerunPlugin implements Plugin<Project> {
         }
 
         def android = project.extensions.android
+        try {
+            //close preDexLibraries
+            android.dexOptions.preDexLibraries = false
+
+            //open jumboMode
+            android.dexOptions.jumboMode = true
+            reflectAapt2Flag()
+        } catch (Throwable e) {
+            //no preDexLibraries field, just continue
+        }
+
         project.afterEvaluate {
             TinkerunExtension configuration = project.tinkerun
             if(!configuration.enabled){
@@ -172,7 +183,12 @@ public class TinkerunPlugin implements Plugin<Project> {
 
                 //copy resources.ap_
                 TinkerunCopyResourcesTask copyResourcesTask=project.tasks.create("tinkerunCopyResource${variantName}", TinkerunCopyResourcesTask)
-                copyResourcesTask.fromFile=variantOutput.processResources.packageOutputFile
+                if (variantOutput.processResources.properties['packageOutputFile'] != null) {
+                    copyResourcesTask.fromFile = variantOutput.processResources.packageOutputFile
+                } else if (variantOutput.processResources.properties['resPackageOutputFolder'] != null) {
+                    copyResourcesTask.fromFile = new File(variantOutput.processResources.resPackageOutputFolder, "resources-" + variant.name + ".ap_");
+                }
+//                copyResourcesTask.fromFile=variantOutput.processResources.packageOutputFile
                 copyResourcesTask.toFile=project.file(targetDir+"/"+RESOURCES_FILE_NAME)
                 copyResourcesTask.dependsOn dexTask
 
@@ -209,7 +225,7 @@ public class TinkerunPlugin implements Plugin<Project> {
                         }
                         //复制APK
                         project.copy{
-                            from variant.outputs.outputFile
+                            from variant.outputs.first().outputFile
                             rename { String fileName ->
                                 BASE_APK_NAME
                             }

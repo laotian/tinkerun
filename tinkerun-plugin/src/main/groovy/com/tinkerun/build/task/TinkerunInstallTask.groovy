@@ -11,7 +11,7 @@ import org.gradle.api.tasks.TaskAction
 public class TinkerunInstallTask extends DefaultTask {
 
 
-    public static final String INSTALL_POSITION="/sdcard/tinkerun/"
+    public static final String INSTALL_POSITION="/data/local/tmp/tinkerun/"
     String patchApk
     def packageName
 

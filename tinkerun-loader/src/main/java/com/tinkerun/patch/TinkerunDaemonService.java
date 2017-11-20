@@ -19,6 +19,7 @@ import java.io.File;
 
 public class TinkerunDaemonService extends IntentService {
 
+    private static final String PATH_FILE="/data/local/tmp/tinkerun/%s/patch.apk";
 
     public TinkerunDaemonService(){
         super("Tinkerun-Daemon");
@@ -27,17 +28,12 @@ public class TinkerunDaemonService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        //TODO 检查SD卡权限
-        String patchLocation= Environment.getExternalStorageDirectory()+"/tinkerun/"+getApplicationContext().getApplicationInfo().packageName+"/patch.apk";
+        String patchLocation=String.format(PATH_FILE,getApplicationContext().getApplicationInfo().packageName);
         File patch=new File(patchLocation);
         if(patch.exists() && patch.canRead()){
-//            installTinker();
             TinkerInstaller.onReceiveUpgradePatch(this,patch.getAbsolutePath());
-//            Tinker.with(this).
-            Log.e("Tinkerun","found resource file="+patch.getAbsolutePath());
-//            TinkerInstaller.onReceiveUpgradePatch(getApplicationContext(),patchLocation);
         }else{
-            Log.e("Tinkerun","can't install file="+patch.getAbsolutePath());
+            Log.e("Tinkerun","can't install file="+patch.getAbsolutePath()+",patch file not exists or you don't have permission");
         }
 
 
