@@ -111,9 +111,11 @@ public class TinkerunDexDiffDecoder extends BaseDecoder {
     @Override
     public boolean patch(final File oldFile, final File newFile) throws Exception {
 
-        //保存 changed_classes.dex
-        final File dest = new File(config.mTempResultDir + "/" + CHANGED_CLASSES_DEX_NAME);
-        FileOperation.copyFileUsingStream(newFile,dest);
+        if(newFile.exists()) {
+            //保存 changed_classes.dex
+            final File dest = new File(config.mTempResultDir + "/" + CHANGED_CLASSES_DEX_NAME);
+            FileOperation.copyFileUsingStream(newFile, dest);
+        }
 
 
 //        final String dexName = getRelativeDexName(oldFile, newFile);
@@ -184,6 +186,8 @@ public class TinkerunDexDiffDecoder extends BaseDecoder {
     private void generateChangedClassesDexFile() throws IOException {
         final String dexMode = config.mDexRaw ? "raw" : "jar";
         final File dest = new File(config.mTempResultDir + "/" + CHANGED_CLASSES_DEX_NAME);
+
+        if(!dest.exists()) return;
 
         Logger.d("\nBuilding changed classes dex: %s, size: %d\n", dest.getAbsolutePath(), dest.length());
 

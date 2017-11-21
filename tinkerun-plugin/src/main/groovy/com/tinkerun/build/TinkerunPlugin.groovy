@@ -168,7 +168,7 @@ public class TinkerunPlugin implements Plugin<Project> {
                 TinkerunJavacTask javacTask = project.tasks.create("tinkerunJavac${variantName}", TinkerunJavacTask)
                 javacTask.classesDir=classesDir
                 javacTask.LAST_BUILD=LAST_BUILD
-                javacTask.copyFrom(variant.javaCompiler)
+                javacTask.variant=variant
 
                 if(!configuration.sourceSkipped){
                     javacTask.dependsOn variantOutput.processResources
@@ -180,6 +180,7 @@ public class TinkerunPlugin implements Plugin<Project> {
                 dexTask.baseName=variant.baseName
                 dexTask.targetDir=targetDir
                 dexTask.classesDir=classesDir
+                dexTask.rClasses=javacTask.rClasses
 
                 //copy resources.ap_
                 TinkerunCopyResourcesTask copyResourcesTask=project.tasks.create("tinkerunCopyResource${variantName}", TinkerunCopyResourcesTask)

@@ -31,11 +31,29 @@ public class TinkerunDexTask extends DefaultTask {
     String targetDir
     String classesDir
     String baseName
-
+    Set<String> rClasses
     public static final String jarName=TinkerunPlugin.jarName
     public static final String dexName=TinkerunPlugin.dexName
+
+    /**
+     * 有变化的Java类需要编译成dex
+     */
+    boolean foundChangedClass
+
+     Closure zipExclude={
+        if(it.isDirectory()){
+            return false;
+        }else if(rClasses.contains(classesDir.toPath().relativize(it.file.toPath()).toString())){
+            return true
+        }else{
+            this.foundChangedClass =true
+            return false
+        }
+    }
+
     TinkerunDexTask() {
         group = 'tinkerun'
+        rClasses=new HashSet<>()
     }
 
 //    @Input
@@ -55,18 +73,14 @@ public class TinkerunDexTask extends DefaultTask {
 
     @TaskAction
     def dex() {
+        foundChangedClass=false
         def task = project.tasks.create("tinkerunZip"  +baseName.capitalize() , Jar.class, new Action<Jar>() {
-
-            //FIXME 暂时以名称排除，应以是否为apt生成的R.java来判断
-            //并且这可能会生成没有类的jar，导致dex失败
-            final Pattern pattern=Pattern.compile('^R\\$[a-z]+\\.class$')
 
             @Override
             void execute(Jar zip) {
                 zip.from(classesDir)
-                zip.exclude {
-                   it.name=="R.class" || pattern.matcher(it.name).matches()
-                }
+                zip.includeEmptyDirs=false
+                zip.exclude(zipExclude)
                 zip.setDestinationDir(project.file(targetDir))
                 zip.setArchiveName(jarName)
             }
@@ -74,7 +88,12 @@ public class TinkerunDexTask extends DefaultTask {
         task.execute()
         getClassesDir().delete()
         File jarFile=project.file(targetDir+"/"+jarName)
-        doDex(jarFile,project.android.getDexOptions())
+        if(foundChangedClass) {
+            //如果jar中没有任何class,调用dx.jar会报错
+            doDex(jarFile, project.android.getDexOptions())
+        }else{
+            dexFile.delete()
+        }
         jarFile.delete()
     }
 
