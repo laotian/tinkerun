@@ -45,7 +45,7 @@ tinkerun{
 ```
 
 ### 使用方式
-首先确保停用InstantRun；先正常编译并安装App，然后调用tinkerunInstall{Flavor}Debug. Tinkerun不能使用在Release模式下自被自动禁用
+首先确保停用InstantRun；先正常编译并安装App，然后调用tinkerunInstall{Flavor}Debug. Tinkerun在Release模式下会被自动禁用
 
 ### 已知bug
 1. Preverified - classes 错误；计划beta3解决.
