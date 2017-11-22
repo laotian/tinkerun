@@ -24,9 +24,6 @@ apply plugin: 'com.tinkerun.app'
 buildscript {
     repositories {
         jcenter()
-        maven{
-           url "https://dl.bintray.com/laotian/tinkerun"
-        }
     }
     dependencies {
         classpath "com.tinkerun:tinkerun-gradle-plugin:${VERSION_NAME}"
