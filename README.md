@@ -19,6 +19,8 @@ app.gradle
 VERSION_NAME对应最新版：比如1.9.1-beta2
 
 ```gradle
+apply plugin: 'com.tinkerun.app'
+
 buildscript {
     repositories {
         jcenter()
