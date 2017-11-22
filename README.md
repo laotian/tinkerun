@@ -37,6 +37,9 @@ dependencies {
 tinkerun{
    //if you want to forbidden tinkerun
    //enabled false
+   //类似tinker的configField设置，mgm hq-crm 需要添加这两个设置
+   configField("patchMessage","testMessage")
+   configField("patchVersion","1.0.0")
 }
 
 ```
