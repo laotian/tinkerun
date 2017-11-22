@@ -48,8 +48,8 @@ tinkerun{
 首先确保停用InstantRun；先正常编译并安装App，然后调用tinkerunInstall{Flavor}Debug. Tinkerun不能使用在Release模式下自被自动禁用
 
 ### 已知bug
-1.Preverified - classes 错误；计划beta3解决.
-2.假如classA 里的final field1被classB引用，并且修改了classA里的field1并没有修改classB文件，则classB无法感应到这个变化；近期解决
+1. Preverified - classes 错误；计划beta3解决.
+2. 假如classA 里的final field1被classB引用，并且修改了classA里的field1并没有修改classB文件，则classB无法感应到这个变化；近期解决
 
 ### 特别说明
 1. Tinkerun的运行时采用tinker. 原理为生成tinker所使用的补丁，以实现热替换。gradle插件也大多来自[Tinker](https://github.com/Tencent/tinker). 项目内的包名和类名也尽量和Tinker保持一致，以方便熟悉Tinker的开发者
