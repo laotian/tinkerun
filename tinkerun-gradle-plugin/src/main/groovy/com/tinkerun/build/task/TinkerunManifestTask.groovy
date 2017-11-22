@@ -16,7 +16,7 @@
 
 package com.tinkerun.build.task
 
-import com.tinkerun.build.TinkerunPlugin
+import com.tinkerun.build.TinkerunAppPlugin
 import groovy.xml.Namespace
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
@@ -28,7 +28,7 @@ import org.gradle.api.tasks.TaskAction
  * @author tianlupan
  */
 public class TinkerunManifestTask extends DefaultTask {
-    static final String MANIFEST_XML = TinkerunPlugin.TINKER_INTERMEDIATES + "AndroidManifest.xml"
+    static final String MANIFEST_XML = TinkerunAppPlugin.TINKER_INTERMEDIATES + "AndroidManifest.xml"
     static final String TINKERUN_APP = "TINKERUN_APP"
     static final String TINKER_ID = "TINKER_ID"
     static final String TINKERUN_APPLICATION="com.tinkerun.loader.TinkerunApplication"

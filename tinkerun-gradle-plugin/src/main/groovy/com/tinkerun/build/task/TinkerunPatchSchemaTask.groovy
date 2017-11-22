@@ -16,9 +16,7 @@
 
 package com.tinkerun.build.task
 import com.tencent.tinker.build.patch.InputParam
-import com.tencent.tinker.build.patch.Runner
 import com.tencent.tinker.build.patch.TinkerunRunner
-import com.tinkerun.build.TinkerunPlugin
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.TaskAction

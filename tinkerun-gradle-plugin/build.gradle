@@ -11,7 +11,7 @@ dependencies {
 //    compile project(':tinker-build:tinker-patch-lib')
     compile 'com.google.gradle:osdetector-gradle-plugin:1.2.1'
     compile 'com.android.tools.build:gradle:2.1.0'
-    compile project(":tinkerun-patch-lib")
+    compile project(':tinkerun-gradle-lib')
 }
 
 repositories {
@@ -30,6 +30,6 @@ sourceSets {
         }
     }
 }
-
+//apply from: rootProject.file('gradle/jcenter.gradle')
 apply from: rootProject.file('gradle/java-artifacts.gradle')
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')

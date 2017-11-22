@@ -2,7 +2,7 @@
 
 buildscript {
     repositories {
-        mavenLocal()
+//        mavenLocal()
         jcenter()
     }
     dependencies {
@@ -16,8 +16,11 @@ buildscript {
 
 allprojects {
     repositories {
-        mavenLocal()
+//        mavenLocal()
         jcenter()
+//        maven{
+//            url "https://dl.bintray.com/laotian/tinkerun"
+//        }
     }
     tasks.withType(Javadoc).all {
         enabled = false
@@ -37,24 +40,24 @@ ext {
     supportLibVersion = '23.0.1'
     javaVersion = JavaVersion.VERSION_1_7
 
-    GROUP = 'com.tencent.tinker'
+    GROUP = 'com.tinkerun'
     VERSION_NAME = "${VERSION_NAME_PREFIX}${VERSION_NAME_SUFFIX}"
 
     POM_PACKAGING = "pom"
-    POM_DESCRIPTION= "tinker"
+    POM_DESCRIPTION= "tinkerun"
 
-    POM_URL = "https://github.com/Tencent/tinker"
-    POM_SCM_URL = "https://github.com/Tencent/tinker.git"
-    POM_ISSUE_URL = 'https://github.com/Tencent/tinker/issues'
+    POM_URL = "https://github.com/laotian/tinkerun"
+    POM_SCM_URL = "https://github.com/laotian/tinkerun.git"
+    POM_ISSUE_URL = 'https://github.com/laotian/tinkerun/issues'
 
     POM_LICENCE_NAME = "BSD License"
     POM_LICENCE_URL = "https://opensource.org/licenses/BSD-3-Clause"
     POM_LICENCE_DIST = "repo"
 
-    POM_DEVELOPER_ID="Tencent Wechat"
-    POM_DEVELOPER_NAME="Tencent Wechat, Inc."
+    POM_DEVELOPER_ID="Tinkerun"
+    POM_DEVELOPER_NAME="Laotian"
 
     BINTRAY_LICENCE= ['BSD 3-Clause']
-    BINTRAY_ORGANIZATION = "tinker"
+    BINTRAY_ORGANIZATION = "tinkerun"
 
 }

@@ -68,7 +68,7 @@ artifacts {
 //for local maven test
 afterEvaluate { project ->
     tasks.all { Task task ->
-        if (task.name.equalsIgnoreCase('publishTinkerPatchPublicationToMavenLocal')) {
+        if (task.name.equalsIgnoreCase('publishTinkerunPublicationToMavenLocal')) {
             task.dependsOn tasks.getByName('assemble')
         }
     }
@@ -76,7 +76,7 @@ afterEvaluate { project ->
 
 publishing {
     publications {
-        TinkerPatch(MavenPublication) {
+        Tinkerun(MavenPublication) {
             groupId = group
             artifactId = project.getName()
             version = version
@@ -87,7 +87,7 @@ publishing {
     }
 }
 
-task buildAndPublishTinkerToLocalMaven(dependsOn: ['build', 'publishTinkerPatchPublicationToMavenLocal']) {
+task buildAndPublishTinkerToLocalMaven(dependsOn: ['build', 'publishTinkerunPublicationToMavenLocal']) {
     group = 'tinker'
 }
 

@@ -16,9 +16,8 @@
 
 package com.tinkerun.build.task
 
-import com.tinkerun.build.TinkerunPlugin
+import com.tinkerun.build.TinkerunAppPlugin
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
 /**
@@ -27,7 +26,7 @@ import org.gradle.api.tasks.TaskAction
  * @author zhangshaowen
  */
 public class TinkerunMultidexConfigTask extends DefaultTask {
-    static final String MULTIDEX_CONFIG_PATH = TinkerunPlugin.TINKER_INTERMEDIATES + "tinkerun_multidexkeep.pro"
+    static final String MULTIDEX_CONFIG_PATH = TinkerunAppPlugin.TINKER_INTERMEDIATES + "tinkerun_multidexkeep.pro"
     static final String MULTIDEX_CONFIG_SETTINGS =
             "-keep public class * implements com.tencent.tinker.loader.app.ApplicationLifeCycle {\n" +
                     "    <init>(...);\n" +

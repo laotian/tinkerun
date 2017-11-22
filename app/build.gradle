@@ -1,13 +1,16 @@
 apply plugin: 'com.android.application'
-apply plugin: 'tinkerun'
+apply plugin: 'com.tinkerun.app'
 
 buildscript {
     repositories {
-        mavenLocal()
+//        mavenLocal()
         jcenter()
+        maven{
+           url "https://dl.bintray.com/laotian/tinkerun"
+        }
     }
     dependencies {
-        classpath "com.tencent.tinker:tinkerun-plugin:${TINKER_VERSION}"
+        classpath "com.tinkerun:tinkerun-gradle-plugin:${VERSION_NAME}"
     }
 }
 
@@ -45,38 +48,40 @@ android {
     }
 
 }
-tinkerun{
-//    enabled false
-    configField("config1","value1")
-    configField("config2","haha")
-}
+//tinkerun{
+////    enabled false
+//    configField("config1","value1")
+//    configField("config2","haha")
+//}
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
-    compile project(':tinkerun-loader')
+//    compile project(':tinkerun-android-lib')
+    compile("com.tinkerun:tinkerun-android-lib:${VERSION_NAME}")
+//    compile("com.tencent.tinker:tinker-android-lib:${TINKER_VERSION}") { changing = true }
     compile 'com.android.support:multidex:1.0.1'
 }
 
 project.afterEvaluate {
 
-    android.applicationVariants.all { variant ->
-
-//      println
-
-        def variantOutput = variant.outputs.first()
-        def variantName = variant.name.capitalize()
-        def variantData = variant.variantData
-        def resDir
-
-        if (variantOutput.processResources.properties['resDir'] != null) {
-            resDir = variantOutput.processResources.resDir
-        } else if (variantOutput.processResources.properties['inputResourcesDir'] != null) {
-            resDir = variantOutput.processResources.inputResourcesDir.getFiles().first()
-        }
-
-        println "resDir="+resDir
-
-    }
+//    android.applicationVariants.all { variant ->
+//
+////      println
+//
+//        def variantOutput = variant.outputs.first()
+//        def variantName = variant.name.capitalize()
+//        def variantData = variant.variantData
+//        def resDir
+//
+//        if (variantOutput.processResources.properties['resDir'] != null) {
+//            resDir = variantOutput.processResources.resDir
+//        } else if (variantOutput.processResources.properties['inputResourcesDir'] != null) {
+//            resDir = variantOutput.processResources.inputResourcesDir.getFiles().first()
+//        }
+//
+//        println "resDir="+resDir
+//
+//    }
 }

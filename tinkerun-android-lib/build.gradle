@@ -34,15 +34,15 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    testCompile 'junit:junit:4.12'
+//    compile fileTree(include: ['*.jar'], dir: 'libs')
+//    testCompile 'junit:junit:4.12'
 //    compile "com.android.support:multidex:1.0.1"
-    compile("com.tencent.tinker:tinker-android-lib:${TINKER_VERSION}") { changing = true }
-    compile("com.tencent.tinker:tinker-android-loader:${TINKER_VERSION}") { changing = true }
-    compile("com.tencent.tinker:aosp-dexutils:${TINKER_VERSION}") { changing = true }
-    compile("com.tencent.tinker:bsdiff-util:${TINKER_VERSION}") { changing = true }
-    compile("com.tencent.tinker:tinker-ziputils:${TINKER_VERSION}") { changing = true }
-    compile("com.tencent.tinker:tinker-commons:${TINKER_VERSION}") { changing = true }
+    compile("com.tencent.tinker:tinker-android-lib:${TINKER_VERSION}")
+//    compile("com.tencent.tinker:tinker-android-loader:${TINKER_VERSION}") { changing = true }
+//    compile("com.tencent.tinker:aosp-dexutils:${TINKER_VERSION}") { changing = true }
+//    compile("com.tencent.tinker:bsdiff-util:${TINKER_VERSION}") { changing = true }
+//    compile("com.tencent.tinker:tinker-ziputils:${TINKER_VERSION}") { changing = true }
+//    compile("com.tencent.tinker:tinker-commons:${TINKER_VERSION}") { changing = true }
 }
 
 
@@ -57,6 +57,8 @@ task buildTinkerSdk(type: Copy, dependsOn: [build]) {
         fileName.replace("release", "${version}")
     }
 }
+
+//apply from: rootProject.file('gradle/jcenter.gradle')
 //
 apply from: rootProject.file('gradle/android-artifacts.gradle')
-//apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
+apply from: rootProject.file('gradle/gradle-mvn-push.gradle')

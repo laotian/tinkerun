@@ -4,7 +4,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
-import com.tinkerun.build.TinkerunPlugin
+import com.tinkerun.build.TinkerunAppPlugin
 
 /**
  *
@@ -34,7 +34,7 @@ public class TinkerunCopyResourcesTask extends DefaultTask {
         project.copy{
             from getFromFile()
             rename { String fileName ->
-                TinkerunPlugin.RESOURCES_FILE_NAME
+                TinkerunAppPlugin.RESOURCES_FILE_NAME
             }
             into getToFile().getParent()
         }

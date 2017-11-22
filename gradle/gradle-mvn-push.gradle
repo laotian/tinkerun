@@ -93,9 +93,9 @@ bintray {
     configurations = ['archives']
 
     pkg {
-        repo = 'maven'
-        userOrg = BINTRAY_ORGANIZATION
-        name = "${GROUP}:${POM_ARTIFACT_ID}"
+        repo = 'tinkerun'
+//        userOrg = BINTRAY_ORGANIZATION
+        name = "${POM_ARTIFACT_ID}"
         licenses = BINTRAY_LICENCE
         vcsUrl = POM_SCM_URL
         websiteUrl = POM_URL

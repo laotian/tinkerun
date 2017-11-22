@@ -21,7 +21,7 @@ import org.gradle.api.tasks.compile.JavaCompile
  * Created by tianlupan on 2017/11/14.
  */
 
-public class TinkerunPlugin implements Plugin<Project> {
+public class TinkerunAppPlugin implements Plugin<Project> {
 
     public static final String TINKER_INTERMEDIATES = "build/intermediates/tinkerun_intermediates/"
 

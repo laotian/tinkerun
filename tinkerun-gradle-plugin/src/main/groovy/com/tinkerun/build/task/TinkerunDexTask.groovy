@@ -1,25 +1,13 @@
 package com.tinkerun.build.task
 
-import com.android.build.gradle.api.ApplicationVariant
-import com.android.builder.model.SourceProvider
-import com.tinkerun.build.TinkerunPlugin
-import com.tinkerun.io.FileUtils
+import com.tinkerun.build.TinkerunAppPlugin
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
-import org.gradle.api.file.FileCollection
-import org.gradle.api.file.FileTree
-import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.bundling.Jar
-import org.gradle.api.tasks.bundling.Zip
-import org.gradle.api.tasks.compile.JavaCompile
-
-import java.util.regex.Pattern
 
 /**
  *
@@ -32,8 +20,8 @@ public class TinkerunDexTask extends DefaultTask {
     String classesDir
     String baseName
     Set<String> rClasses
-    public static final String jarName=TinkerunPlugin.jarName
-    public static final String dexName=TinkerunPlugin.dexName
+    public static final String jarName=TinkerunAppPlugin.jarName
+    public static final String dexName=TinkerunAppPlugin.dexName
 
     /**
      * 有变化的Java类需要编译成dex

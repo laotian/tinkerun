@@ -21,7 +21,7 @@ import com.tencent.tinker.build.aapt.AaptUtil
 import com.tencent.tinker.build.aapt.PatchUtil
 import com.tencent.tinker.build.aapt.RDotTxtEntry
 import com.tencent.tinker.build.util.FileOperation
-import com.tinkerun.build.TinkerunPlugin
+import com.tinkerun.build.TinkerunAppPlugin
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.TaskAction
@@ -32,8 +32,8 @@ import org.gradle.api.tasks.TaskAction
  * @author zhangshaowen
  */
 public class TinkerunResourceIdTask extends DefaultTask {
-    static final String RESOURCE_PUBLIC_XML = TinkerunPlugin.TINKER_INTERMEDIATES + "public.xml"
-    static final String RESOURCE_IDX_XML = TinkerunPlugin.TINKER_INTERMEDIATES + "idx.xml"
+    static final String RESOURCE_PUBLIC_XML = TinkerunAppPlugin.TINKER_INTERMEDIATES + "public.xml"
+    static final String RESOURCE_IDX_XML = TinkerunAppPlugin.TINKER_INTERMEDIATES + "idx.xml"
 
     String resDir
     String rTxtFile
