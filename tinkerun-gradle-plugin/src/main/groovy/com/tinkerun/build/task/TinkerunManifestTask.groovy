@@ -32,6 +32,8 @@ public class TinkerunManifestTask extends DefaultTask {
     static final String TINKERUN_APP = "TINKERUN_APP"
     static final String TINKER_ID = "TINKER_ID"
     static final String TINKERUN_APPLICATION="com.tinkerun.loader.TinkerunApplication"
+    //要启动的页面类名,用以ADB启动；adb shell am start -n breakan.test/breakan.test.TestActivity
+    String outputLaunchComponent;
     String manifestPath
     String tinkerId
 
@@ -46,6 +48,8 @@ public class TinkerunManifestTask extends DefaultTask {
 
         def xml = new XmlParser().parse(new InputStreamReader(new FileInputStream(manifestPath), "utf-8"))
 
+        String applicationId=xml.attributes().get("package")
+
         def application = xml.application[0]
         if (application) {
             def applicationName = application.attributes()[ns.name]
@@ -53,6 +57,17 @@ public class TinkerunManifestTask extends DefaultTask {
             updateMeta(application,ns,TINKER_ID,tinkerId)
             updateMeta(application,ns,TINKERUN_APP,applicationName)
             addApplicationToLoaderPattern(applicationName)
+
+            //获取launchActivity
+            def launchActivity= application?.activity.find { activity ->
+                activity.'*'.find { node ->
+                    node.category != null && node.category[0].attributes()[ns.name] == "android.intent.category.LAUNCHER"
+                }
+            }
+
+            if(launchActivity!=null){
+                outputLaunchComponent=applicationId+"/"+launchActivity.attributes()[ns.name]
+            }
         }
         // Write the manifest file
         def printer = new XmlNodePrinter(new PrintWriter(manifestPath, "utf-8"))

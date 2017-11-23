@@ -37,7 +37,6 @@ public class TinkerunAppPlugin implements Plugin<Project> {
     public static final String jarName="changed_classes.jar"
     public static final String dexName="changed_classes.dex"
 
-
     @Override
     public void apply(Project project) {
         project.extensions.create("tinkerun", TinkerunExtension)
@@ -64,6 +63,15 @@ public class TinkerunAppPlugin implements Plugin<Project> {
                 return
             }
 
+            //基础包模式或补丁模式
+            def patchMode=false
+            //违背了任务依赖解耦，FIXME
+            project.gradle.startParameter.taskNames.each { task ->
+                if (task.startsWith("tinkerun")) {
+                    patchMode=true
+                }
+            }
+
             android.applicationVariants.all { variant ->
 
                 def variantOutput = variant.outputs.first()
@@ -85,21 +93,15 @@ public class TinkerunAppPlugin implements Plugin<Project> {
                     )
                 }
 
-                //基础包模式或补丁模式
-                def patchMode=false
-                //违背了任务依赖解耦，FIXME
-                project.gradle.startParameter.taskNames.each { task ->
-                    if (task.startsWith("tinkerun")) {
-                        patchMode=true
-                    }
-                }
-
                 def targetDir=project.file(TINKER_INTERMEDIATES+variantDir).getAbsolutePath()
                 def basePropertyFile=project.file(targetDir+"/"+BASE_PROPERTIES)
                 // Add this proguard settings file to the list
                 def TINKER_ID="TINKERUN_"+date()
                 def LAST_BUILD=date()
-                if(patchMode && basePropertyFile.exists()){
+                boolean  validTargetDir=checkTargetDir(new File(targetDir))
+                //当前任务不是tinkerun开头，并且tinkerun目录有效，当作真正的补丁模式
+                boolean  variantPatchMode=patchMode && validTargetDir
+                if(variantPatchMode){
                     Properties properties = new Properties()
                     properties.load(basePropertyFile.newReader())
                     TINKER_ID=properties.getProperty(BASE_PROPERTIES_TINKER_ID)
@@ -122,7 +124,7 @@ public class TinkerunAppPlugin implements Plugin<Project> {
 
                 //resource id
                 TinkerunResourceIdTask applyResourceTask = project.tasks.create("tinkerunProcess${variantName}ResourceId", TinkerunResourceIdTask)
-                applyResourceTask.cleanMode=!patchMode
+                applyResourceTask.cleanMode=!variantPatchMode
                 applyResourceTask.rTxtFile=targetDir+"/"+R_TXT
                 if (variantOutput.processResources.properties['resDir'] != null) {
                     applyResourceTask.resDir = variantOutput.processResources.resDir
@@ -136,9 +138,6 @@ public class TinkerunAppPlugin implements Plugin<Project> {
                 if (manifestTask.manifestPath == null || applyResourceTask.resDir == null) {
                     throw new RuntimeException("manifestTask.manifestPath or applyResourceTask.resDir is null.")
                 }
-
-
-
 
                 // Add this multidex proguard settings file to the list
                 boolean multiDexEnabled = variantData.variantConfiguration.isMultiDexEnabled()
@@ -209,13 +208,17 @@ public class TinkerunAppPlugin implements Plugin<Project> {
 
                 //安装
                 TinkerunInstallTask installTask = project.tasks.create("tinkerunInstall${variantName}", TinkerunInstallTask)
-                installTask.patchApk=outputDir+PATCH_APK_NAME
                 installTask.packageName=variant.applicationId
-                installTask.dependsOn  tinkerunPatchBuildTask
-
+                installTask.manifestTask=manifestTask
+                if(variantPatchMode){
+                    installTask.patchApk=outputDir+PATCH_APK_NAME
+                    installTask.dependsOn  tinkerunPatchBuildTask
+                }else{
+                    installTask.dependsOn variant.install
+                }
 
                 //基础包模式下，保存基础包信息
-                if(!patchMode){
+                if(!variantPatchMode){
                     variantOutput.assemble.doLast {
                         //清理
                         project.file(targetDir).deleteDir()
@@ -291,6 +294,11 @@ public class TinkerunAppPlugin implements Plugin<Project> {
 
      static String date() {
          return System.currentTimeMillis()+""
+    }
+
+    //检查tinkerun目录有效
+    static boolean  checkTargetDir(File targetDir){
+        return targetDir.exists() && new File(targetDir,R_TXT).exists() && new File(targetDir,BASE_PROPERTIES).exists() && new File(BASE_APK_NAME);
     }
 
 }
