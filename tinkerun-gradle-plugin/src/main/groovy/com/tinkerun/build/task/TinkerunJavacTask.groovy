@@ -2,6 +2,7 @@ package com.tinkerun.build.task
 
 import com.android.build.gradle.api.ApplicationVariant
 import org.gradle.api.file.FileCollection
+import org.gradle.api.file.FileTree
 import org.gradle.api.tasks.compile.JavaCompile
 
 /**
@@ -38,28 +39,24 @@ public class TinkerunJavacTask extends JavaCompile {
         File originalDestination=javaCompile.getDestinationDir()
         FileCollection originalClassPath=javaCompile.getClasspath()
 
-        def destination=project.file(classesDir)
-        destination.delete()
-
         def androidJar= "${project.android.getSdkDirectory()}/platforms/${project.android.compileSdkVersion}/android.jar"
         FileCollection incrementalSource=  originalSource.filter {
             it.lastModified()>Long.valueOf(LAST_BUILD)
         }
 
         File rDir=project.file(R_DIR+variant.getDirName())
-        incrementalSource.each {File file->
+        originalSource.each {File file->
             if(file.toPath().startsWith(rDir.toPath()) && file.getName()=="R.java"){
                 //如com/laotian/app
                 String classDir= rDir.toPath().relativize(file.getParentFile().toPath())
-                rClasses.add(classDir+"/R.class")
+                rClasses.add(classDir+ File.separator+ "R.class")
                 R_TYPES.each {
-                    rClasses.add(classDir+'/R$'+it+'.class')
+                    rClasses.add(classDir+ File.separator+ 'R$'+it+'.class')
                 }
             }
         }
-
         setSource(incrementalSource)
-        setDestinationDir(destination)
+        setDestinationDir(project.file(classesDir))
         setClasspath(originalClassPath+project.files(originalDestination)+project.files(androidJar))
         options.compilerArgs=javaCompile.options.compilerArgs
         options.sourcepath=javaCompile.options.sourcepath
