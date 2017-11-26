@@ -1,1 +1,2 @@
-include ':app', ':tinkerun-android-lib', ':tinkerun-gradle-plugin', ':tinkerun-gradle-lib'
+include ':app'
+include  ':tinkerun-android-lib', ':tinkerun-gradle-plugin', ':tinkerun-gradle-lib'

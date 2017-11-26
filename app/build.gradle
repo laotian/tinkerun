@@ -4,7 +4,7 @@ apply plugin: 'com.tinkerun.app'
 
 buildscript {
     repositories {
-        mavenLocal()
+//        mavenLocal()
         jcenter()
     }
     dependencies {
@@ -46,41 +46,21 @@ android {
     }
 
 }
+
 tinkerun{
-//    enabled false
-//    configField("config1","value1")
-//    configField("config2","haha")
+    //if you want to forbidden tinkerun
+    //enabled false
+    //类似tinker的configField设置，mgm hq-crm 需要添加这两个设置
+    configField("patchMessage","testMessage")
+    configField("patchVersion","1.0.0")
 }
+
+
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
-    compile project(':tinkerun-android-lib')
-//    compile("com.tinkerun:tinkerun-android-lib:${VERSION_NAME}")
-//    compile("com.tencent.tinker:tinker-android-lib:${TINKER_VERSION}") { changing = true }
+    debugCompile("com.tinkerun:tinkerun-android-lib:${VERSION_NAME}")
     compile 'com.android.support:multidex:1.0.1'
-}
-
-
-project.afterEvaluate {
-
-    android.applicationVariants.all { variant ->
-
-//      println
-
-        def variantOutput = variant.outputs.first()
-        def variantName = variant.name.capitalize()
-        def variantData = variant.variantData
-        def resDir
-
-        if (variantOutput.processResources.properties['resDir'] != null) {
-            resDir = variantOutput.processResources.resDir
-        } else if (variantOutput.processResources.properties['inputResourcesDir'] != null) {
-            resDir = variantOutput.processResources.inputResourcesDir.getFiles().first()
-        }
-
-        println "resDir="+resDir
-
-    }
 }
