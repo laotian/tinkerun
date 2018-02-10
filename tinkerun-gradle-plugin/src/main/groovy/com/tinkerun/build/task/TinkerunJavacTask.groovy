@@ -1,8 +1,9 @@
 package com.tinkerun.build.task
 
 import com.android.build.gradle.api.ApplicationVariant
+import com.tinkerun.io.ReflectUtils
 import org.gradle.api.file.FileCollection
-import org.gradle.api.file.FileTree
+import org.gradle.api.tasks.compile.CompileOptions
 import org.gradle.api.tasks.compile.JavaCompile
 
 /**
@@ -13,6 +14,11 @@ import org.gradle.api.tasks.compile.JavaCompile
  *
  * BUG1:
  * 当前是根据文件修改时间为依据，增量编译这些类（假如classA);假如 classA.java定义了final类型的变量，被classB引用，此时classB并不会被重新编译，导致classB未变化；需要分析final field依赖图
+ *
+ *
+ * 参照：android-apt
+ * https://bitbucket.org/hvisser/android-apt/src/7bf3a58def8e3116dbbf1bf3723bdecd47b2e5f8/src/main/groovy/com/neenbedankt/gradle/androidapt/AndroidAptPlugin.groovy?at=default&fileviewer=file-view-default
+ *
  * @author tianlupan
  */
 public class TinkerunJavacTask extends JavaCompile {
@@ -20,6 +26,7 @@ public class TinkerunJavacTask extends JavaCompile {
     String classesDir
     String LAST_BUILD
     Set<String> rClasses
+    JavaCompile javaCompile
 
     private static final String R_DIR="build/generated/source/r/"
     private static final String[] R_TYPES = ['anim','animator','array','attr','bool','color','dimen','drawable','id','integer','layout','mipmap','raw','string','style','styleable']
@@ -33,7 +40,7 @@ public class TinkerunJavacTask extends JavaCompile {
     void setVariant(ApplicationVariant variant){
         rClasses.clear()
         //javac task
-        JavaCompile javaCompile=variant.javaCompiler
+        javaCompile=variant.hasProperty('javaCompiler') ? variant.javaCompiler : variant.javaCompile
 
         FileCollection originalSource=javaCompile.source
         File originalDestination=javaCompile.getDestinationDir()
@@ -58,12 +65,15 @@ public class TinkerunJavacTask extends JavaCompile {
         setSource(incrementalSource)
         setDestinationDir(project.file(classesDir))
         setClasspath(originalClassPath+project.files(originalDestination)+project.files(androidJar))
-        options.compilerArgs=javaCompile.options.compilerArgs
-        options.sourcepath=javaCompile.options.sourcepath
-        options.debug=javaCompile.options.debug
         targetCompatibility=javaCompile.targetCompatibility
         sourceCompatibility=javaCompile.sourceCompatibility
-        options.bootClasspath=javaCompile.options.bootClasspath
+
+        //如果配置期就设置options的话，当com.tinkerun.app 放在android-apt 插件的后面，
+        //会导致无法获取annotation processor设置
+        doFirst {
+            ReflectUtils.copyFrom(CompileOptions.class,javaCompile.options,options)
+        }
     }
+
 
 }
