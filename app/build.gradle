@@ -69,15 +69,15 @@ tinkerun{
     configField("patchVersion","1.0.0")
 }
 
-project.afterEvaluate {
-    project.logger.log(LogLevel.ERROR, "gradleVersion="+project.gradle.gradleVersion.split("\\.")[0])
-
-    android.applicationVariants.each { variant ->
-        JavaCompile javaCompile = variant.hasProperty('javaCompiler') ? variant.javaCompiler : variant.javaCompile
-        project.logger.log(LogLevel.ERROR,  javaCompile.options.compilerArgs.join("  "))
-    }
-
-}
+//project.afterEvaluate {
+//    project.logger.log(LogLevel.ERROR, "gradleVersion="+project.gradle.gradleVersion.split("\\.")[0])
+//
+//    android.applicationVariants.each { variant ->
+//        JavaCompile javaCompile = variant.hasProperty('javaCompiler') ? variant.javaCompiler : variant.javaCompile
+//        project.logger.log(LogLevel.ERROR,  javaCompile.options.compilerArgs.join("  "))
+//    }
+//
+//}
 
 
 
@@ -86,9 +86,6 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
     compile("com.tinkerun:tinkerun-android-lib:${VERSION_NAME}")
-
-    //仅在本地测试时发布tinkerun到 本地仓库时才需要加上这个依赖
-    compile("com.tencent.tinker:tinker-android-lib:${TINKER_VERSION}")
     compile 'com.android.support:multidex:1.0.1'
     compile "com.jakewharton:butterknife:8.4.0"
     apt "com.jakewharton:butterknife-compiler:8.4.0"

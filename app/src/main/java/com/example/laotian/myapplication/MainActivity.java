@@ -11,8 +11,8 @@ import butterknife.ButterKnife;
 
 public class MainActivity extends Activity {
 
-    @BindView(R.id.tvName)
-    TextView tvName;
+//    @BindView(R.id.tvName)
+//    TextView tvName;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -21,10 +21,9 @@ public class MainActivity extends Activity {
     }
 
     public void show(View view){
-        tvName.setText("hello,,you");
+//        tvName.setText("hello,,you");
        int a=100;
         Toast.makeText(this,getResources().getText(R.string.zy),Toast.LENGTH_LONG).show();
-        System.out.println("yes3332122222");
     }
 
 }
