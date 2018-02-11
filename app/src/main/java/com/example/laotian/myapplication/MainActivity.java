@@ -20,8 +20,8 @@ import butterknife.ButterKnife;
 
 public class MainActivity extends Activity {
 
-    @BindView(R.id.tvName)
-    TextView tvName;
+    @BindView(R2.id.tvName2)
+    TextView tvName2;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,7 +50,7 @@ public class MainActivity extends Activity {
     }
 
     public void show(View view){
-        tvName.setText("hello,,you2223446622aa");
+        tvName2.setText("hello,,zzzzccTT");
        int a=100;
         Toast.makeText(this,getResources().getText(R.string.zy),Toast.LENGTH_LONG).show();
     }
