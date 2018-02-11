@@ -9,7 +9,12 @@
         <service android:name=".patch.TinkerunResultService"
             android:exported="false"
             android:enabled="true"></service>
-
+        <activity android:name=".debug.LogActivity"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation"
+            android:label="Tinkerun/Tinker 日志列表"
+            android:launchMode="singleInstance"
+            />
 
     </application>
 

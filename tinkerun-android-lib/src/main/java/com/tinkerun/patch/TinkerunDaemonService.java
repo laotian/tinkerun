@@ -9,6 +9,7 @@ import com.tencent.tinker.lib.patch.TinkerunUpgradePatch;
 import com.tencent.tinker.lib.tinker.Tinker;
 import com.tencent.tinker.lib.tinker.TinkerInstaller;
 import com.tencent.tinker.loader.shareutil.ShareConstants;
+import com.tinkerun.debug.NotificationUtil;
 import com.tinkerun.loader.ApplicationDelegate;
 
 import java.io.File;
@@ -28,6 +29,7 @@ public class TinkerunDaemonService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        NotificationUtil.showNotification(this,"收到补丁，正在安装");
         String patchLocation=String.format(PATH_FILE,getApplicationContext().getApplicationInfo().packageName);
         File patch=new File(patchLocation);
         if(patch.exists() && patch.canRead()){

@@ -9,9 +9,11 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.tencent.tinker.lib.tinker.Tinker;
+import com.tencent.tinker.lib.util.TinkerLog;
 import com.tencent.tinker.loader.app.DefaultApplicationLike;
 import com.tencent.tinker.loader.shareutil.ShareConstants;
 import com.tinkerun.io.ManifestParser;
+import com.tinkerun.debug.TinkerunLogImpl;
 import com.tinkerun.patch.TinkerunResultService;
 import com.tencent.tinker.lib.patch.TinkerunUpgradePatch;
 
@@ -79,6 +81,9 @@ public class ApplicationDelegate extends DefaultApplicationLike {
                 e.printStackTrace();
             }
         }
+        TinkerunLogImpl logImp= TinkerunLogImpl.getInstance();
+        logImp.init(userApplication);
+        TinkerLog.setTinkerLogImp(logImp);
         Tinker tinker = new Tinker.Builder(getApplication()).tinkerFlags(ShareConstants.TINKER_ENABLE_ALL).build();
         Tinker.create(tinker);
         tinker.install(ApplicationDelegate.sInstance.getTinkerResultIntent(),TinkerunResultService.class,new TinkerunUpgradePatch());

@@ -11,6 +11,7 @@ import android.widget.Toast;
 import com.tencent.tinker.lib.service.DefaultTinkerResultService;
 import com.tencent.tinker.lib.service.PatchResult;
 import com.tencent.tinker.lib.util.TinkerServiceInternals;
+import com.tinkerun.debug.NotificationUtil;
 
 /**
  * Created by tianlupan on 2017/11/14.
@@ -23,6 +24,7 @@ public class TinkerunResultService extends DefaultTinkerResultService {
 
     @Override
     public void onPatchResult(PatchResult result) {
+        NotificationUtil.showNotification(this,result.isSuccess ? "补丁安装成功" : "补丁安装失败");
         if(result!=null && result.isSuccess){
             restart();
         }
@@ -32,12 +34,6 @@ public class TinkerunResultService extends DefaultTinkerResultService {
     private void restart(){
         TinkerServiceInternals.killAllOtherProcess(this);
         pendingStartActivity(0);
-//        new Handler(Looper.getMainLooper()).post(new Runnable() {
-//            @Override
-//            public void run() {
-//                Toast.makeText(TinkerunResultService.this,RESTART_TIPS,Toast.LENGTH_SHORT).show();
-//            }
-//        });
     }
 
     public  void pendingStartActivity(long delayMills) {

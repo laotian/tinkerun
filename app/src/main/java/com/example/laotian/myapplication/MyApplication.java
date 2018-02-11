@@ -4,6 +4,8 @@ import android.app.Application;
 import android.support.multidex.MultiDex;
 import android.util.Log;
 
+import com.tinkerun.debug.NotificationUtil;
+
 public class MyApplication extends Application {
 
 
@@ -12,5 +14,6 @@ public class MyApplication extends Application {
         super.onCreate();
         MultiDex.install(this);
         Log.d("MyApplication","onCreate23..");
+
     }
 }
