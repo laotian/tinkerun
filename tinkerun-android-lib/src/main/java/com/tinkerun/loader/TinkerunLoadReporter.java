@@ -26,6 +26,10 @@ public class TinkerunLoadReporter extends DefaultLoadReporter {
         super.onLoadPatchListenerReceiveFail(patchFile, errorCode);
         String error=TinkerunConstants.getError(errorCode,"ERROR_PATCH_");
         sendNotification(errorCode== ShareConstants.ERROR_LOAD_OK,",onLoadPatchListenerReceiveFail，errorCode="+errorCode+"->"+error);
+        if(errorCode==ShareConstants.ERROR_LOAD_DISABLE){
+            TinkerLog.e(TAG,"onLoadPatchListenerReceiveFail:"+errorCode+",强制重新启用");
+            TinkerUtil.enableTinker(context);
+        }
     }
 
     @Override
