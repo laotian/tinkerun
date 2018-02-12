@@ -12,6 +12,7 @@ import com.tencent.tinker.lib.tinker.Tinker;
 import com.tencent.tinker.lib.util.TinkerLog;
 import com.tencent.tinker.loader.app.DefaultApplicationLike;
 import com.tencent.tinker.loader.shareutil.ShareConstants;
+import com.tinkerun.debug.NotificationUtil;
 import com.tinkerun.io.ManifestParser;
 import com.tinkerun.debug.TinkerunLogImpl;
 import com.tinkerun.patch.TinkerunResultService;
@@ -65,6 +66,7 @@ public class ApplicationDelegate extends DefaultApplicationLike {
         if(userApplication!=null){
             userApplication.onCreate();
         }
+//        NotificationUtil.showNotification(getApplication(),"点击查看Tinkerun日志");
         installTinker();
     }
 
@@ -84,7 +86,10 @@ public class ApplicationDelegate extends DefaultApplicationLike {
         TinkerunLogImpl logImp= TinkerunLogImpl.getInstance();
         logImp.init(userApplication);
         TinkerLog.setTinkerLogImp(logImp);
-        Tinker tinker = new Tinker.Builder(getApplication()).tinkerFlags(ShareConstants.TINKER_ENABLE_ALL).build();
+        Tinker tinker = new Tinker.Builder(getApplication())
+                .tinkerFlags(ShareConstants.TINKER_ENABLE_ALL)
+                .loadReport(new TinkerunLoadReporter(getApplication()))
+                .build();
         Tinker.create(tinker);
         tinker.install(ApplicationDelegate.sInstance.getTinkerResultIntent(),TinkerunResultService.class,new TinkerunUpgradePatch());
     }
