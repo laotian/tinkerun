@@ -24,6 +24,8 @@ import com.tencent.tinker.build.util.*;
 import com.tinkerun.io.FileUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileVisitResult;
@@ -32,8 +34,10 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -84,11 +88,47 @@ public class TinkerunResDiffDecoder extends BaseDecoder implements FileUtils.Zip
     }
 
 
+    //FIXME 现在只对assets做MOD操作，ADD也当成MOD;
+    //不支持assets的删除操作，后续版本添加上
+    private void addAssetFile(File assetFile,File assetDir){
+        if(assetFile==null || !assetFile.exists() || !assetDir.exists() || assetFile.getName().equals(".") || assetFile.getName().equals("..")) return;
+        String relativePath=assetDir.toPath().relativize(assetFile.toPath()).toString();
+        relativePath="assets/"+relativePath;
+
+        if(assetFile.isFile()){
+            try {
+                FileUtils.saveStream(new FileInputStream(assetFile),config.mTempResultDir.getAbsolutePath(),relativePath);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            modifiedSet.add(relativePath);
+            writeResLog(relativePath,null,TypedValue.MOD);
+        }else{
+            for(File subFile:assetFile.listFiles()){
+                addAssetFile(subFile,assetDir);
+            }
+        }
+    }
+
     @Override
     public boolean patch(File oldFile, File newFile) throws Exception {
         if(config.mResFilePattern.size()>0) {
             FileUtils.walkResource(oldFile, newFile, config.mResFilePattern, this);
         }
+
+        //把assets文件复制过来
+        File assetsFileDir =new File(new File(config.mOutFolder).getParentFile(),"assets");
+        addAssetFile(assetsFileDir,assetsFileDir);
+//        if(assetsFileDir.exists()){
+//            for(File assetFile:assetsFileDir.listFiles()){
+//                FileUtils.saveStream(new FileInputStream(assetFile),config.mTempResultDir.getAbsolutePath(),entryName);
+//                addedSet.add(entryName);
+//                writeResLog(entryName,null,TypedValue.ADD);
+//                assetFile.
+//            }
+//        }
+
+
         //
 //
 //        String name = getRelativePathStringToNewFile(newFile);

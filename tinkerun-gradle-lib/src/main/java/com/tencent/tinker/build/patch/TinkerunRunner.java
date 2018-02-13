@@ -16,16 +16,16 @@
 
 package com.tencent.tinker.build.patch;
 
-import com.tencent.tinker.build.builder.PatchBuilder;
 import com.tencent.tinker.build.builder.TinkerunPatchBuilder;
-import com.tencent.tinker.build.decoder.ApkDecoder;
 import com.tencent.tinker.build.decoder.TinkerunApkDecoder;
+import com.tencent.tinker.build.decoder.TinkerunResDiffDecoder;
 import com.tencent.tinker.build.info.PatchInfo;
 import com.tencent.tinker.build.util.Logger;
 import com.tencent.tinker.build.util.TinkerPatchException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 
 /**
  * Created by zhangshaowen on 2/26/16.

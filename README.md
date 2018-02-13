@@ -9,15 +9,15 @@ android app Module的Java代码及资源文件的快速增量编译与替换；
 ButterKnife等Annotation Processor
 
 ### 不支持
-1. android app Module里的Assets替换
-2. android lib Module里的任何替换；
+1. android lib Module里的任何替换；
+2. Tinker不支持的功能；如增量修改AndroidManifest.XML
 
 ### 配置方式
 参照项目内的APP
 
 app.gradle  
 
-VERSION_NAME对应最新版：1.9.1.6
+VERSION_NAME对应最新版：1.9.1.7
 
 ```gradle
 apply plugin: 'com.tinkerun.app'
@@ -56,3 +56,4 @@ tinkerun{
 ### 更新日志
 1. 1.9.1.5更新：tinkerInstall{Flavor}Debug支持自动识别增量或全量模式 ; 修复android build tools 3.x模式下tinkerunDex任务报65535的问题
 2. 1.9.1.6更新： 2018/2/10 支持butterKnife等通过 android-apt / annotationProcessor 发挥作作用的注解处理工具
+3. 1.9.1.7更新： 2018/2/13 增强稳定性，修复加载失败后就被禁用的问题；支持Tinkerun Notification错误提示；支持assets文件的增量修改与新建（暂不支持增量删除）

@@ -69,18 +69,6 @@ tinkerun{
     configField("patchVersion","1.0.0")
 }
 
-//project.afterEvaluate {
-//    project.logger.log(LogLevel.ERROR, "gradleVersion="+project.gradle.gradleVersion.split("\\.")[0])
-//
-//    android.applicationVariants.each { variant ->
-//        JavaCompile javaCompile = variant.hasProperty('javaCompiler') ? variant.javaCompiler : variant.javaCompile
-//        project.logger.log(LogLevel.ERROR,  javaCompile.options.compilerArgs.join("  "))
-//    }
-//
-//}
-
-
-
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support.constraint:constraint-layout:1.0.2'

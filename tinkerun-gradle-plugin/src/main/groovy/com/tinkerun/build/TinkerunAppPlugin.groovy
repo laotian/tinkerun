@@ -1,6 +1,7 @@
 package com.tinkerun.build
 
 import com.tinkerun.build.extension.*
+import com.tinkerun.build.task.TinkerunCopyAssetsTask
 import com.tinkerun.build.task.TinkerunCopyResourcesTask
 import com.tinkerun.build.task.TinkerunDexTask
 import com.tinkerun.build.task.TinkerunInstallTask
@@ -14,6 +15,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
+import org.gradle.api.file.FileTree
 import org.gradle.api.tasks.compile.JavaCompile
 
 /**
@@ -26,6 +28,7 @@ public class TinkerunAppPlugin implements Plugin<Project> {
     public static final String TINKER_INTERMEDIATES = "build/intermediates/tinkerun_intermediates/"
 
     public static final String RESOURCES_FILE_NAME="resources.apk"
+    public static final String ASSETS_FILE_NAME="assets"
     public static final String PATH_DEFAULT_OUTPUT="tinkerunPatch"
     public static final String BASE_APK_NAME="base.apk"
     public static final String PATCH_APK_NAME="patch_signed.apk"
@@ -192,6 +195,17 @@ public class TinkerunAppPlugin implements Plugin<Project> {
                 copyResourcesTask.toFile=project.file(targetDir+"/"+RESOURCES_FILE_NAME)
                 copyResourcesTask.dependsOn dexTask
 
+                //incremental assets add and modify ,don't support delete
+                Collection<java.io.File> assetFiles=new HashSet<>();
+                variant.sourceSets.each {s->
+                    assetFiles.addAll(s.assetsDirectories)
+                }
+                TinkerunCopyAssetsTask copyAssetsTask=project.tasks.create("tinkerunCopyAssets${variantName}", TinkerunCopyAssetsTask)
+                copyAssetsTask.assetFiles=project.files(assetFiles)
+                copyAssetsTask.LAST_BUILD=LAST_BUILD
+                copyAssetsTask.toFile=project.file(targetDir+"/"+ASSETS_FILE_NAME)
+                copyAssetsTask.dependsOn copyResourcesTask
+
                 //打包
                 def resourceApk=targetDir+"/"+RESOURCES_FILE_NAME
                 def outputDir=targetDir+"/output/"
@@ -204,7 +218,7 @@ public class TinkerunAppPlugin implements Plugin<Project> {
                 tinkerunPatchBuildTask.tinkerId=TINKER_ID
 //                tinkerunPatchBuildTask.resourcesFile=variantOutput.processResources.packageOutputFile
                 tinkerunPatchBuildTask.configuration=configuration
-                tinkerunPatchBuildTask.dependsOn copyResourcesTask
+                tinkerunPatchBuildTask.dependsOn copyAssetsTask
 
                 //安装
                 TinkerunInstallTask installTask = project.tasks.create("tinkerunInstall${variantName}", TinkerunInstallTask)
